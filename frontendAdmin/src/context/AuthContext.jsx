@@ -4,7 +4,13 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [adminUser, setAdminUser] = useState(() => {
-    const saved = localStorage.getItem('awaara_admin_auth');
+    // Clear any legacy localStorage auth to prevent cross-tab persistence
+    try {
+      localStorage.removeItem('awaara_admin_auth');
+    } catch {
+      // ignore
+    }
+    const saved = sessionStorage.getItem('awaara_admin_auth');
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -21,7 +27,7 @@ export const AuthProvider = ({ children }) => {
         loginTime: new Date().toISOString()
       };
       setAdminUser(userObj);
-      localStorage.setItem('awaara_admin_auth', JSON.stringify(userObj));
+      sessionStorage.setItem('awaara_admin_auth', JSON.stringify(userObj));
       return { success: true };
     }
     return {
@@ -32,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setAdminUser(null);
-    localStorage.removeItem('awaara_admin_auth');
+    sessionStorage.removeItem('awaara_admin_auth');
   };
 
   return (
