@@ -52,6 +52,11 @@ const userSchema = new mongoose.Schema(
     country: {
       type: String,
       default: "India"
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user"
     }
   },
   {

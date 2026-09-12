@@ -24,13 +24,28 @@ const authenticateUser = async (req, res, next) => {
       process.env.JWT_SECRET || "awaara_jwt_secret_key_2026_super_secure"
     );
 
-    const user = await userModel.findById(decoded.id).select("-password");
+    let user = null;
+    try {
+      user = await userModel.findById(decoded.id).select("-password");
+    } catch (dbErr) {
+      // In case decoded.id is not a standard ObjectId
+    }
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User session invalid or user not found."
-      });
+      // Fallback for admin role token if user doc was not found in DB
+      if (decoded.role === "admin") {
+        user = {
+          _id: decoded.id || "admin",
+          fullname: process.env.ADMIN_NAME || "Operations Administrator",
+          email: process.env.ADMIN_EMAIL || "admin@awaara.com",
+          role: "admin"
+        };
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: "User session invalid or user not found."
+        });
+      }
     }
 
     req.user = user;
@@ -69,9 +84,20 @@ const optionalAuth = async (req, res, next) => {
         token,
         process.env.JWT_SECRET || "awaara_jwt_secret_key_2026_super_secure"
       );
-      const user = await userModel.findById(decoded.id).select("-password");
+      let user = null;
+      try {
+        user = await userModel.findById(decoded.id).select("-password");
+      } catch (e) {}
+
       if (user) {
         req.user = user;
+      } else if (decoded.role === "admin") {
+        req.user = {
+          _id: decoded.id || "admin",
+          fullname: process.env.ADMIN_NAME || "Operations Administrator",
+          email: process.env.ADMIN_EMAIL || "admin@awaara.com",
+          role: "admin"
+        };
       }
     }
     next();
@@ -85,5 +111,3 @@ module.exports = {
   authorizeAdmin,
   optionalAuth
 };
-
-

@@ -13,6 +13,39 @@ const generateToken = (userId, role) => {
   );
 };
 
+// Helper function to find or provision Admin user based on .env
+const getOrCreateEnvAdmin = async () => {
+  const envAdminEmail = (process.env.ADMIN_EMAIL || "admin@awaara.com").toLowerCase().trim();
+  const envAdminName = process.env.ADMIN_NAME || "Operations Administrator";
+  const envAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+  let adminUser = await userModel.findOne({
+    $or: [{ email: envAdminEmail }, { role: "admin" }]
+  });
+
+  if (!adminUser) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(envAdminPassword, salt);
+
+    adminUser = await userModel.create({
+      fullname: envAdminName,
+      email: envAdminEmail,
+      password: hashedPassword,
+      phone: process.env.ADMIN_PHONE || "9999999999",
+      role: "admin",
+      country: "India"
+    });
+  } else {
+    // If admin exists, ensure role is 'admin'
+    if (adminUser.role !== "admin") {
+      adminUser.role = "admin";
+      await adminUser.save();
+    }
+  }
+
+  return adminUser;
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -41,7 +74,7 @@ const register = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await userModel.findOne({ email: email.toLowerCase() });
+    const existingUser = await userModel.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -56,7 +89,7 @@ const register = async (req, res) => {
     // Create user
     const newUser = await userModel.create({
       fullname,
-      email: email.toLowerCase(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
       phone: phone || "",
       gender: gender || "",
@@ -104,26 +137,57 @@ const register = async (req, res) => {
   }
 };
 
-// @desc    Authenticate / Login user
+// @desc    Authenticate / Login user or Admin
 // @route   POST /api/auth/login
 // @access  Public
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
+    const inputIdentifier = (email || username || "").toLowerCase().trim();
 
-    if (!email || !password) {
+    if (!inputIdentifier || !password) {
       return res.status(400).json({
         success: false,
-        message: "Please provide email and password."
+        message: "Please provide your identifier (email or admin ID) and password."
       });
     }
 
-    // Find user
-    const user = await userModel.findOne({ email: email.toLowerCase() });
+    const envAdminEmail = (process.env.ADMIN_EMAIL || "admin@awaara.com").toLowerCase().trim();
+    const envAdminUsername = (process.env.ADMIN_USERNAME || "admin").toLowerCase().trim();
+    const envAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+    // Check if login matches .env admin credentials
+    const isEnvAdminMatch =
+      (inputIdentifier === envAdminEmail || inputIdentifier === envAdminUsername) &&
+      password === envAdminPassword;
+
+    if (isEnvAdminMatch) {
+      const adminUser = await getOrCreateEnvAdmin();
+      const token = generateToken(adminUser._id, "admin");
+
+      const userResponse = {
+        _id: adminUser._id,
+        fullname: adminUser.fullname || process.env.ADMIN_NAME || "Operations Administrator",
+        email: adminUser.email || envAdminEmail,
+        phone: adminUser.phone || "",
+        role: "admin",
+        createdAt: adminUser.createdAt
+      };
+
+      return res.status(200).json({
+        success: true,
+        message: "Administrator login successful!",
+        token,
+        user: userResponse
+      });
+    }
+
+    // Standard database user lookup
+    const user = await userModel.findOne({ email: inputIdentifier });
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password credentials."
+        message: "Invalid email/username or password credentials."
       });
     }
 
@@ -132,11 +196,11 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password credentials."
+        message: "Invalid email/username or password credentials."
       });
     }
 
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id, user.role || "user");
 
     const userResponse = {
       _id: user._id,
@@ -150,7 +214,7 @@ const login = async (req, res) => {
       state: user.state,
       pincode: user.pincode,
       country: user.country,
-      role: user.role,
+      role: user.role || "user",
       createdAt: user.createdAt
     };
 
@@ -165,6 +229,60 @@ const login = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error during login.",
+      error: error.message
+    });
+  }
+};
+
+// @desc    Explicit Admin Login via .env credentials
+// @route   POST /api/auth/admin/login or POST /api/auth/admin-login
+// @access  Public
+const adminLogin = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const inputIdentifier = (username || email || "").toLowerCase().trim();
+
+    if (!inputIdentifier || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide admin identifier and password."
+      });
+    }
+
+    const envAdminEmail = (process.env.ADMIN_EMAIL || "admin@awaara.com").toLowerCase().trim();
+    const envAdminUsername = (process.env.ADMIN_USERNAME || "admin").toLowerCase().trim();
+    const envAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+    if (
+      (inputIdentifier === envAdminEmail || inputIdentifier === envAdminUsername) &&
+      password === envAdminPassword
+    ) {
+      const adminUser = await getOrCreateEnvAdmin();
+      const token = generateToken(adminUser._id, "admin");
+
+      return res.status(200).json({
+        success: true,
+        message: "Admin authentication successful!",
+        token,
+        user: {
+          _id: adminUser._id,
+          fullname: adminUser.fullname || process.env.ADMIN_NAME || "Operations Administrator",
+          email: adminUser.email || envAdminEmail,
+          role: "admin",
+          createdAt: adminUser.createdAt
+        }
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid Administrator ID or password credentials."
+    });
+  } catch (error) {
+    console.error("Admin Login Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error during admin login.",
       error: error.message
     });
   }
@@ -191,5 +309,6 @@ const getMe = async (req, res) => {
 module.exports = {
   register,
   login,
+  adminLogin,
   getMe
 };

@@ -8,7 +8,7 @@ export const LoginScreen = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -18,13 +18,16 @@ export const LoginScreen = () => {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      const result = login(username.trim(), password);
+    try {
+      const result = await login(username.trim(), password);
       if (!result.success) {
-        setError(result.error);
-        setIsLoading(false);
+        setError(result.error || 'Authentication failed');
       }
-    }, 400);
+    } catch (err) {
+      setError('An error occurred during authentication.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleQuickFill = () => {
