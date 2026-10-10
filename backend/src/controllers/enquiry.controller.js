@@ -78,7 +78,7 @@ exports.createEnquiry = async (req, res) => {
     res.status(201).json({
       success: true,
       message:
-        "Your holiday enquiry has been received! Our team will get right back to you shortly with the custom itinerary. Check your email for confirmation!",
+        "Your enquiry has been received. Our team will get in touch shortly with customized itinerary details.",
       enquiry: savedEnquiry,
       emailSent: emailResult.success,
     });

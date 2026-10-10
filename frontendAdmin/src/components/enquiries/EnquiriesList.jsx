@@ -70,7 +70,7 @@ export const EnquiriesList = ({ showToast }) => {
           prev.map((e) => (e._id === id ? { ...e, emailSent: true } : e)),
         );
         if (showToast)
-          showToast("Resend API email dispatched successfully! 📧");
+          showToast("Confirmation email dispatched successfully.");
       } else {
         if (showToast) showToast(res.message || "Error dispatching email.");
       }
@@ -121,354 +121,279 @@ export const EnquiriesList = ({ showToast }) => {
 
   return (
     <div className="admin-places-view">
-      {/* Top Header & Actions */}
-      <div className="view-header-row">
-        <div>
-          <h2>Holiday Enquiries & Leads</h2>
-          <p className="view-subtitle">
-            Review custom trip inquiries from travelers and manage Resend email
-            confirmations.
-          </p>
+      {/* Action Header Toolbar (No duplicate title) */}
+      <div className="admin-toolbar-row">
+        <div className="toolbar-info">
+          <div className="toolbar-badge">
+            <Mail size={14} />
+            <span>LEAD & INQUIRY PIPELINE</span>
+          </div>
+          <span className="toolbar-count">
+            Showing <strong>{filteredEnquiries.length}</strong> of <strong>{enquiries.length}</strong> traveler inquiries
+          </span>
         </div>
 
-        <div className="view-header-actions">
+        <div className="toolbar-actions">
           <button
-            className="btn btn-outline btn-sm"
+            className="btn btn-outline btn-sm filter-refresh-btn"
             onClick={fetchEnquiries}
             title="Refresh Enquiries"
           >
-            <RefreshCw size={15} /> Refresh Leads
+            <RefreshCw size={14} className={loading ? "spin" : ""} /> Refresh Leads
           </button>
         </div>
       </div>
 
-      {/* Stats Summary */}
-      <div
-        className="stats-cards-grid"
-        style={{
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          marginBottom: "24px",
-        }}
-      >
-        <div className="stat-card">
-          <div className="stat-label">TOTAL ENQUIRIES</div>
-          <div className="stat-value">{enquiries.length}</div>
-          <div className="stat-sub">From website visitors</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">NEW / PENDING</div>
-          <div className="stat-value" style={{ color: "#e0663f" }}>
-            {countNew}
+      {/* 4 Executive KPI Cards */}
+      <div className="admin-kpi-grid kpi-4-col">
+        <div className="kpi-card" onClick={() => setStatusFilter("all")}>
+          <div className="kpi-icon-wrap" style={{ background: "rgba(37, 99, 235, 0.1)", color: "#2563eb" }}>
+            <Mail size={22} />
           </div>
-          <div className="stat-sub">Awaiting team follow-up</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">CONTACTED</div>
-          <div className="stat-value" style={{ color: "#2563eb" }}>
-            {countContacted}
+          <div className="kpi-body">
+            <span className="kpi-label">TOTAL ENQUIRIES</span>
+            <div className="kpi-value">{enquiries.length}</div>
+            <span className="kpi-sub">Website itinerary requests</span>
           </div>
-          <div className="stat-sub">Itinerary shared with traveler</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">CONVERTED / BOOKED</div>
-          <div className="stat-value" style={{ color: "#16a34a" }}>
-            {countConverted}
+
+        <div className="kpi-card highlight" onClick={() => setStatusFilter("new")}>
+          <div className="kpi-icon-wrap" style={{ background: "rgba(234, 88, 12, 0.12)", color: "#ea580c" }}>
+            <Sparkles size={22} />
           </div>
-          <div className="stat-sub">Successfully converted</div>
+          <div className="kpi-body">
+            <span className="kpi-label">NEW / PENDING</span>
+            <div className="kpi-value" style={{ color: "#ea580c" }}>{countNew}</div>
+            <span className="kpi-sub">Awaiting team follow-up</span>
+          </div>
+        </div>
+
+        <div className="kpi-card" onClick={() => setStatusFilter("contacted")}>
+          <div className="kpi-icon-wrap" style={{ background: "rgba(14, 165, 233, 0.12)", color: "#0284c7" }}>
+            <Clock size={22} />
+          </div>
+          <div className="kpi-body">
+            <span className="kpi-label">CONTACTED</span>
+            <div className="kpi-value" style={{ color: "#0284c7" }}>{countContacted}</div>
+            <span className="kpi-sub">Itinerary shared with traveler</span>
+          </div>
+        </div>
+
+        <div className="kpi-card" onClick={() => setStatusFilter("converted")}>
+          <div className="kpi-icon-wrap" style={{ background: "rgba(16, 185, 129, 0.12)", color: "#059669" }}>
+            <CheckCircle2 size={22} />
+          </div>
+          <div className="kpi-body">
+            <span className="kpi-label">CONVERTED / BOOKED</span>
+            <div className="kpi-value" style={{ color: "#059669" }}>{countConverted}</div>
+            <span className="kpi-sub">Successfully closed bookings</span>
+          </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div
-        className="panel-card"
-        style={{ padding: "16px 20px", marginBottom: "20px" }}
-      >
-        <div
-          className="places-filter-bar"
-          style={{
-            display: "flex",
-            gap: "14px",
-            flexWrap: "wrap",
-            alignItems: "center",
-          }}
-        >
-          <div
-            className="search-input-wrapper"
-            style={{ flex: "1", minWidth: "240px", position: "relative" }}
-          >
-            <Search
-              size={16}
-              style={{
-                position: "absolute",
-                left: "12px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#888",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Search by traveler name, email, phone, or destination..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="form-input"
-              style={{ paddingLeft: "36px", width: "100%" }}
-            />
-          </div>
+      <div className="admin-filter-bar-card">
+        <div className="filter-search-box">
+          <Search size={16} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search by traveler name, email, phone, or destination..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="filter-text-input"
+          />
+        </div>
 
-          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <Filter size={15} color="#666" />
+        <div className="filter-controls-group">
+          <div className="filter-select-wrapper">
+            <Filter size={14} className="filter-select-icon" />
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="form-input"
-              style={{ minWidth: "150px" }}
+              className="filter-select-input"
             >
-              <option value="all">All Statuses</option>
-              <option value="new">New / Unread</option>
-              <option value="contacted">Contacted</option>
-              <option value="converted">Converted</option>
+              <option value="all">All Statuses ({enquiries.length})</option>
+              <option value="new">New / Unread ({countNew})</option>
+              <option value="contacted">Contacted ({countContacted})</option>
+              <option value="converted">Converted ({countConverted})</option>
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
+
+          <button className="btn btn-outline btn-sm filter-refresh-btn" onClick={fetchEnquiries} title="Refresh list">
+            <RefreshCw size={14} className={loading ? "spin" : ""} />
+            <span>Refresh</span>
+          </button>
         </div>
       </div>
 
-      {/* Enquiries Table */}
-      <div className="panel-card" style={{ padding: 0, overflow: "hidden" }}>
+      {/* Enquiries SaaS Table */}
+      <div className="admin-table-container">
         {loading ? (
-          <div style={{ padding: "40px", textAlign: "center" }}>
-            <div className="spinner-sm" style={{ margin: "0 auto 12px" }}></div>
-            <p style={{ color: "#888", fontSize: "14px" }}>
-              Loading traveler inquiries...
-            </p>
+          <div className="admin-loading-state">
+            <div className="spinner"></div>
+            <p>Loading traveler inquiries & leads...</p>
           </div>
         ) : filteredEnquiries.length === 0 ? (
-          <div style={{ padding: "48px 24px", textAlign: "center" }}>
-            <Sparkles
-              size={36}
-              color="var(--coral)"
-              style={{ margin: "0 auto 12px", opacity: 0.8 }}
-            />
-            <h3 style={{ fontSize: "18px", marginBottom: "6px" }}>
-              No Enquiries Found
-            </h3>
-            <p
-              style={{
-                color: "#888",
-                fontSize: "13.5px",
-                maxWidth: "400px",
-                margin: "0 auto",
-              }}
-            >
-              When travelers browse India holiday destinations and submit the
-              enquiry form, their details and Resend email status will show up
-              here.
+          <div className="admin-empty-state">
+            <Sparkles size={38} color="var(--coral)" style={{ opacity: 0.8 }} />
+            <h3>No Enquiries Found</h3>
+            <p>
+              When travelers browse India holiday destinations and submit custom inquiry forms,
+              their details, timing, and confirmation status will display here.
             </p>
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="admin-table">
+            <table className="admin-crm-table">
               <thead>
                 <tr>
                   <th>Traveler</th>
-                  <th>Destination</th>
-                  <th>Timing & Pax</th>
-                  <th>Status</th>
-                  <th>Resend Email</th>
+                  <th>Destination Package</th>
+                  <th>Travel Plan & Pax</th>
+                  <th>Lead Status</th>
+                  <th>Email Status</th>
                   <th>Received</th>
                   <th style={{ textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredEnquiries.map((enq) => (
-                  <tr key={enq._id || enq.id}>
-                    <td>
-                      <div
-                        style={{
-                          fontWeight: "700",
-                          color: "var(--charcoal)",
-                          fontSize: "14px",
-                        }}
-                      >
-                        {enq.name}
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          fontSize: "12px",
-                          color: "#666",
-                          marginTop: "2px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
+                {filteredEnquiries.map((enq) => {
+                  const initials = (enq.name || "T")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join("")
+                    .toUpperCase();
+                  const statusKey = (enq.status || "new").toLowerCase();
+
+                  return (
+                    <tr key={enq._id || enq.id} className="crm-table-row">
+                      {/* Traveler Info */}
+                      <td>
+                        <div className="crm-traveler-cell">
+                          <div className="crm-avatar">
+                            {initials}
+                          </div>
+                          <div className="crm-traveler-details">
+                            <span className="traveler-name">{enq.name}</span>
+                            <div className="traveler-contacts">
+                              <a href={`mailto:${enq.email}`} className="contact-link" title="Send email">
+                                <Mail size={12} />
+                                <span>{enq.email}</span>
+                              </a>
+                              {enq.phone && (
+                                <a href={`tel:${enq.phone}`} className="contact-link" title="Call traveler">
+                                  <Phone size={12} />
+                                  <span>{enq.phone}</span>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Destination Package */}
+                      <td>
+                        <div className="crm-destination-cell">
+                          <div className="destination-name">
+                            <MapPin size={13} className="pin-icon" />
+                            <span>{enq.placeName}</span>
+                          </div>
+                          <div className="destination-meta">
+                            {enq.city ? `${enq.city}, ` : ""}
+                            {enq.state} • {enq.duration || "5 Days"}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Travel Timing & Pax */}
+                      <td>
+                        <div className="crm-plan-cell">
+                          <div className="plan-timing">
+                            <Calendar size={12} />
+                            <span>{enq.timing || "Next 30–60 Days"}</span>
+                          </div>
+                          <div className="plan-pax">
+                            <Users size={12} />
+                            <span>{enq.passengers} Traveler(s) • From {enq.departureCity || "Delhi NCR"}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Lead Status Dropdown */}
+                      <td>
+                        <select
+                          value={statusKey}
+                          onChange={(e) => handleStatusUpdate(enq._id, e.target.value)}
+                          className={`crm-status-select status-${statusKey}`}
                         >
-                          <Mail size={12} /> {enq.email}
+                          <option value="new">● New</option>
+                          <option value="contacted">● Contacted</option>
+                          <option value="converted">● Converted</option>
+                          <option value="cancelled">● Cancelled</option>
+                        </select>
+                      </td>
+
+                      {/* Email Delivery */}
+                      <td>
+                        {enq.emailSent ? (
+                          <span className="email-status-pill sent">
+                            <CheckCircle2 size={13} />
+                            <span>Sent</span>
+                          </span>
+                        ) : (
+                          <span className="email-status-pill pending">
+                            <Clock size={13} />
+                            <span>Pending</span>
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Received Date */}
+                      <td>
+                        <span className="crm-date-text">
+                          {enq.createdAt
+                            ? new Date(enq.createdAt).toLocaleDateString("en-IN", {
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "Recently"}
                         </span>
-                        <span
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
-                        >
-                          <Phone size={12} /> {enq.phone}
-                        </span>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td>
-                      <div
-                        style={{
-                          fontWeight: "600",
-                          color: "var(--charcoal)",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                        }}
-                      >
-                        <MapPin size={14} color="var(--coral)" />
-                        <span>{enq.placeName}</span>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "#777",
-                          marginTop: "2px",
-                        }}
-                      >
-                        {enq.city ? `${enq.city}, ` : ""}
-                        {enq.state} • {enq.duration || "5 Days"}
-                      </div>
-                    </td>
-
-                    <td>
-                      <div
-                        style={{
-                          fontSize: "13px",
-                          fontWeight: "600",
-                          color: "#444",
-                        }}
-                      >
-                        {enq.timing || "Upcoming Month"}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "#777",
-                          marginTop: "2px",
-                        }}
-                      >
-                        👥 {enq.passengers} Traveler(s) • From{" "}
-                        {enq.departureCity || "Delhi NCR"}
-                      </div>
-                    </td>
-
-                    <td>
-                      <select
-                        value={enq.status || "new"}
-                        onChange={(e) =>
-                          handleStatusUpdate(enq._id, e.target.value)
-                        }
-                        className={`status-select status-${enq.status || "new"}`}
-                        style={{
-                          fontSize: "12px",
-                          fontWeight: "700",
-                          padding: "4px 8px",
-                          borderRadius: "6px",
-                          border: "1px solid #ddd",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <option value="new">🟡 New</option>
-                        <option value="contacted">🔵 Contacted</option>
-                        <option value="converted">🟢 Converted</option>
-                        <option value="cancelled">⚪ Cancelled</option>
-                      </select>
-                    </td>
-
-                    <td>
-                      {enq.emailSent ? (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            color: "#16a34a",
-                            fontSize: "12px",
-                            fontWeight: "700",
-                            background: "#dcfce7",
-                            padding: "3px 8px",
-                            borderRadius: "999px",
-                          }}
-                        >
-                          <CheckCircle2 size={13} /> Sent via Resend
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            color: "#ca8a04",
-                            fontSize: "12px",
-                            fontWeight: "700",
-                            background: "#fef9c3",
-                            padding: "3px 8px",
-                            borderRadius: "999px",
-                          }}
-                        >
-                          <Clock size={13} /> Pending
-                        </span>
-                      )}
-                    </td>
-
-                    <td style={{ fontSize: "12px", color: "#888" }}>
-                      {enq.createdAt
-                        ? new Date(enq.createdAt).toLocaleDateString("en-IN", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "Recently"}
-                    </td>
-
-                    <td style={{ textAlign: "right" }}>
-                      <div style={{ display: "inline-flex", gap: "6px" }}>
-                        <button
-                          className="btn-icon"
-                          onClick={() => setSelectedEnquiry(enq)}
-                          title="View Full Details"
-                        >
-                          <Eye size={15} />
-                        </button>
-                        <button
-                          className="btn-icon"
-                          onClick={() => handleResendEmail(enq._id)}
-                          title="Resend Confirmation Email"
-                          disabled={actionLoading}
-                        >
-                          <Send size={15} color="#2563eb" />
-                        </button>
-                        <button
-                          className="btn-icon"
-                          onClick={() => handleDeleteEnquiry(enq._id)}
-                          title="Delete Enquiry"
-                          style={{ color: "#ef4444" }}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Actions */}
+                      <td style={{ textAlign: "right" }}>
+                        <div className="crm-actions-wrap">
+                          <button
+                            className="crm-action-btn"
+                            onClick={() => setSelectedEnquiry(enq)}
+                            title="View Full Details"
+                          >
+                            <Eye size={15} />
+                          </button>
+                          <button
+                            className="crm-action-btn primary"
+                            onClick={() => handleResendEmail(enq._id)}
+                            title="Resend Confirmation Email"
+                            disabled={actionLoading}
+                          >
+                            <Send size={14} />
+                          </button>
+                          <button
+                            className="crm-action-btn danger"
+                            onClick={() => handleDeleteEnquiry(enq._id)}
+                            title="Delete Enquiry"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -684,7 +609,7 @@ export const EnquiriesList = ({ showToast }) => {
                 onClick={() => handleResendEmail(selectedEnquiry._id)}
                 disabled={actionLoading}
               >
-                <Send size={14} /> Resend Email via Resend
+                <Send size={14} /> Resend Confirmation Email
               </button>
 
               <button

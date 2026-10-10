@@ -47,7 +47,8 @@ export const Navbar = ({ onOpenMyBookings, onOpenAuth, onOpenProfile }) => {
       <header className={`nav ${isSolid ? 'solid' : ''}`} id="mainNav">
         <div className="container">
           <a href="#top" className="logo" onClick={closeMobileMenu}>
-            AWAARA
+            <img src="/logo.png" alt="Awaara Logo" className="logo-img" />
+            <span className="logo-text">AWAARA</span>
           </a>
           <nav className="nav-links">
             <a href="#trips">Explore Trips</a>

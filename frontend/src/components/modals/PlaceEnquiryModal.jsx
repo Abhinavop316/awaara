@@ -77,7 +77,7 @@ export const PlaceEnquiryModal = ({ place, isOpen, onClose, onSuccessToast }) =>
       if (res && res.success) {
         setIsSuccess(true);
         if (onSuccessToast) {
-          onSuccessToast(`Enquiry sent for ${place.name}! Confirmation email sent.`);
+          onSuccessToast(`Enquiry submitted for ${place.name}`);
         }
       } else {
         setErrorMessage(res?.message || 'Failed to submit enquiry. Please try again.');
@@ -110,31 +110,28 @@ export const PlaceEnquiryModal = ({ place, isOpen, onClose, onSuccessToast }) =>
           /* SUCCESS STATE VIEW */
           <div className="enquiry-success-view">
             <div className="enquiry-success-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
             </div>
 
-            <h3 className="enquiry-success-title">Enquiry Received! 🎉</h3>
+            <h3 className="enquiry-success-title">Enquiry Received</h3>
             <p className="enquiry-success-desc">
-              Thank you <strong>{formData.name}</strong>! We have received your holiday enquiry for{' '}
+              Thank you, <strong>{formData.name}</strong>. We have received your enquiry for{' '}
               <strong>{place.name}</strong>.
             </p>
 
-            <div className="enquiry-success-email-box">
-              <div className="email-box-header">
-                <span>📧 Confirmation Email Dispatched</span>
-              </div>
-              <p className="email-box-text">
-                A confirmation email has been sent to <strong>{formData.email}</strong> via Resend API.
-                Our holiday specialist team will get right back to you on <strong>{formData.phone}</strong>{' '}
-                with the custom day-by-day itinerary and pricing details.
+            <div className="enquiry-success-details-card">
+              <div className="enquiry-summary-badge">Next Steps</div>
+              <p className="enquiry-summary-text">
+                Our holiday concierge team is reviewing your preferences and will get in touch on{' '}
+                <strong>{formData.phone}</strong> with customized itinerary details and pricing.
               </p>
             </div>
 
             <button className="btn btn-primary enquiry-done-btn" onClick={handleClose}>
-              Awesome, Got It!
+              Done
             </button>
           </div>
         ) : (
@@ -156,6 +153,11 @@ export const PlaceEnquiryModal = ({ place, isOpen, onClose, onSuccessToast }) =>
                   src={place.img}
                   alt={place.name}
                   className="enquiry-place-strip-thumb"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src =
+                      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80';
+                  }}
                 />
                 <div className="enquiry-place-strip-info">
                   <strong>{place.city}, {place.state}</strong>
@@ -276,10 +278,10 @@ export const PlaceEnquiryModal = ({ place, isOpen, onClose, onSuccessToast }) =>
                   {isSubmitting ? (
                     <>
                       <div className="spinner-sm" style={{ borderColor: '#ffffff', borderRightColor: 'transparent' }}></div>
-                      <span>Sending Enquiry via Resend...</span>
+                      <span>Submitting Enquiry...</span>
                     </>
                   ) : (
-                    <span>Submit Enquiry & Receive Itinerary →</span>
+                    <span>Submit Holiday Enquiry →</span>
                   )}
                 </button>
               </div>

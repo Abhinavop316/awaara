@@ -1,205 +1,227 @@
 import React, { useState, useEffect } from 'react';
-import { useAdminData } from '../../context/AdminDataContext';
-import { StatCard } from '../common/StatCard';
-import { formatCurrency, formatDate } from '../../utils/formatters';
 import { placeApi } from '../../services/placeApi';
+import { enquiryApi } from '../../services/enquiryApi';
 import {
-  Compass,
-  Users,
-  CreditCard,
   MapPin,
+  Mail,
+  Compass,
   ArrowRight,
+  Plus,
+  Clock,
   Sparkles,
-  Ticket
+  Users,
+  CheckCircle2,
+  Calendar
 } from 'lucide-react';
 
-export const DashboardOverview = ({
-  onNavigateTab,
-  onOpenNewTrip
-}) => {
-  const { trips, bookings } = useAdminData();
-  const [placesCount, setPlacesCount] = useState(8);
+export const DashboardOverview = ({ onNavigateTab, onOpenNewPlace }) => {
+  const [places, setPlaces] = useState([]);
+  const [enquiries, setEnquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    placeApi.getAllPlaces().then((res) => {
-      if (res && res.success && res.places) {
-        setPlacesCount(res.total || res.places.length);
+    let isMounted = true;
+    async function loadData() {
+      try {
+        const [placesRes, enquiriesRes] = await Promise.allSettled([
+          placeApi.getAllPlaces({ limit: 100 }),
+          enquiryApi.getAllEnquiries()
+        ]);
+
+        if (isMounted) {
+          if (placesRes.status === 'fulfilled' && placesRes.value?.places) {
+            setPlaces(placesRes.value.places);
+          }
+          if (enquiriesRes.status === 'fulfilled' && enquiriesRes.value?.enquiries) {
+            setEnquiries(enquiriesRes.value.enquiries);
+          }
+        }
+      } catch (err) {
+        console.warn('Dashboard data fetch error:', err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-    }).catch(() => {});
+    }
+    loadData();
+    return () => { isMounted = false; };
   }, []);
 
-  const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-  const openTripsCount = trips.filter((t) => t.status === 'open' || t.status === 'limited').length;
+  const totalStates = new Set(places.map((p) => p.state).filter(Boolean)).size;
+  const newEnquiriesCount = enquiries.filter((e) => (e.status || 'New').toLowerCase() === 'new').length;
+  const recentEnquiries = enquiries.slice(0, 5);
+  const featuredPlaces = places.slice(0, 4);
 
   return (
-    <div>
-      {/* 4 KPI Metrics */}
-      <div className="stats-grid">
-        <StatCard
-          title="ACTIVE CURATED TRIPS"
-          value={trips.length}
-          subtext={`${openTripsCount} open for booking`}
-          icon={<Compass size={22} />}
-        />
-        <StatCard
-          title="HOLIDAY DESTINATIONS"
-          value={placesCount}
-          subtext="Curated India holiday itineraries"
-          icon={<MapPin size={22} />}
-        />
-        <StatCard
-          title="CONFIRMED PASSENGERS"
-          value={bookings.length}
-          subtext="Verified traveler bookings"
-          icon={<Users size={22} />}
-        />
-        <StatCard
-          title="TOTAL REVENUE"
-          value={formatCurrency(totalRevenue)}
-          subtext="Processed via UPI & Cards"
-          icon={<CreditCard size={22} />}
-        />
+    <div className="admin-dashboard-view">
+      {/* 4 Executive KPI Cards */}
+      <div className="admin-kpi-grid">
+        <div className="kpi-card" onClick={() => onNavigateTab('holidays')}>
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(224, 102, 63, 0.1)', color: 'var(--coral)' }}>
+            <MapPin size={22} />
+          </div>
+          <div className="kpi-body">
+            <span className="kpi-label">HOLIDAY DESTINATIONS</span>
+            <div className="kpi-value">{places.length}</div>
+            <span className="kpi-sub">Curated Indian travel packages</span>
+          </div>
+        </div>
+
+        <div className="kpi-card" onClick={() => onNavigateTab('holidays')}>
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669' }}>
+            <Compass size={22} />
+          </div>
+          <div className="kpi-body">
+            <span className="kpi-label">STATES COVERED</span>
+            <div className="kpi-value">{totalStates || 12}</div>
+            <span className="kpi-sub">Pan-India scenic regions</span>
+          </div>
+        </div>
+
+        <div className="kpi-card" onClick={() => onNavigateTab('enquiries')}>
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb' }}>
+            <Mail size={22} />
+          </div>
+          <div className="kpi-body">
+            <span className="kpi-label">TOTAL LEADS & ENQUIRIES</span>
+            <div className="kpi-value">{enquiries.length}</div>
+            <span className="kpi-sub">Received from travelers</span>
+          </div>
+        </div>
+
+        <div className="kpi-card highlight" onClick={() => onNavigateTab('enquiries')}>
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(234, 88, 12, 0.12)', color: '#ea580c' }}>
+            <Clock size={22} />
+          </div>
+          <div className="kpi-body">
+            <span className="kpi-label">PENDING FOLLOW-UPS</span>
+            <div className="kpi-value" style={{ color: '#ea580c' }}>{newEnquiriesCount}</div>
+            <span className="kpi-sub">Awaiting concierge contact</span>
+          </div>
+        </div>
       </div>
 
-      {/* Quick Action Banner */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #211d1a 0%, #38312b 100%)',
-          color: 'var(--ivory)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '28px 32px',
-          marginBottom: '32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '20px',
-          boxShadow: 'var(--shadow-lift)'
-        }}
-      >
-        <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(224, 102, 63, 0.25)', color: 'var(--coral)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+      {/* Hero Welcome & Quick Action Banner */}
+      <div className="admin-banner-card">
+        <div className="banner-text">
+          <div className="banner-badge">
             <Sparkles size={13} />
-            <span>ALL-INDIA HOLIDAYS PORTAL</span>
+            <span>HOLIDAY PACKAGES & LEADS PORTAL</span>
           </div>
-          <h2 style={{ color: 'var(--ivory)', fontSize: '23px', marginBottom: '6px' }}>
-            Curated India Holiday Packages & Itineraries
-          </h2>
-          <p style={{ color: 'rgba(250, 246, 239, 0.75)', fontSize: '14px', maxWidth: '580px', margin: 0 }}>
-            Manage Day-by-Day travel plans, iconic attractions, verified hotel stays, and custom pricing across Indian states.
+          <h2>Curated India Holidays Management</h2>
+          <p>
+            Create bespoke travel packages with day-by-day itineraries, track incoming traveler inquiries,
+            and follow up with custom proposals.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            className="btn btn-primary"
-            onClick={() => onNavigateTab('holidays')}
-          >
-            <MapPin size={15} /> Manage Holiday Places →
+        <div className="banner-actions">
+          <button className="btn btn-primary" onClick={onOpenNewPlace}>
+            <Plus size={16} /> New Holiday Package
+          </button>
+          <button className="btn btn-outline-light" onClick={() => onNavigateTab('enquiries')}>
+            Manage Leads <ArrowRight size={15} />
           </button>
         </div>
       </div>
 
-      {/* Grid of 2 Panes: Upcoming Trips & Recent Bookings */}
+      {/* Two Panes Grid */}
       <div className="dashboard-panes-grid">
-        {/* Pane 1: Upcoming Trips */}
-        <div className="panel-card dashboard-pane-trips" style={{ marginBottom: 0 }}>
-          <div className="panel-head">
+        {/* Left Pane: Recent Traveler Enquiries */}
+        <div className="admin-pane-card">
+          <div className="pane-header">
             <div>
-              <h2>Upcoming Curated Trips</h2>
-              <p>Top scheduled departures</p>
+              <h3>Recent Traveler Enquiries</h3>
+              <p>Latest customized itinerary requests</p>
             </div>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => onNavigateTab('trips')}
-            >
-              View All <ArrowRight size={13} />
+            <button className="pane-link-btn" onClick={() => onNavigateTab('enquiries')}>
+              View All ({enquiries.length}) <ArrowRight size={14} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {trips.slice(0, 4).map((trip) => (
-              <div
-                key={trip.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 14px',
-                  background: 'var(--ivory-dim)',
-                  borderRadius: 'var(--radius-sm)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={trip.img}
-                    alt={trip.name}
-                    style={{ width: '42px', height: '36px', borderRadius: '6px', objectFit: 'cover' }}
-                  />
-                  <div>
-                    <strong style={{ fontSize: '14px' }}>{trip.name}</strong>
-                    <div style={{ fontSize: '12px', color: '#7a7267' }}>
-                      {trip.dates} · {formatCurrency(trip.price)}
+          <div className="pane-content">
+            {recentEnquiries.length > 0 ? (
+              <div className="dashboard-leads-list">
+                {recentEnquiries.map((enq) => (
+                  <div key={enq._id} className="dashboard-lead-item">
+                    <div className="lead-avatar">
+                      {(enq.name || 'T')[0].toUpperCase()}
+                    </div>
+                    <div className="lead-main">
+                      <div className="lead-name-row">
+                        <strong>{enq.name}</strong>
+                        <span className={`status-badge-pill status-${(enq.status || 'New').toLowerCase()}`}>
+                          {enq.status || 'New'}
+                        </span>
+                      </div>
+                      <div className="lead-destination">
+                        <MapPin size={12} />
+                        <span>{enq.placeName}</span>
+                        <span className="lead-meta-sep">•</span>
+                        <span>{enq.timing || 'Upcoming Season'}</span>
+                      </div>
+                      <div className="lead-contact">
+                        <span>{enq.phone}</span>
+                        <span className="lead-meta-sep">•</span>
+                        <span>{enq.email}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <span className={`badge-pill badge-${trip.status}`} style={{ fontSize: '11px' }}>
-                    {trip.status.toUpperCase()}
-                  </span>
-                </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="pane-empty">
+                <Mail size={32} color="#9ca3af" />
+                <p>No traveler inquiries yet.</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Pane 2: Recent Bookings */}
-        <div className="panel-card" style={{ marginBottom: 0 }}>
-          <div className="panel-head">
+        {/* Right Pane: Top Holiday Destinations */}
+        <div className="admin-pane-card">
+          <div className="pane-header">
             <div>
-              <h2>Recent Passenger Bookings</h2>
-              <p>Live passenger manifest & reservations</p>
+              <h3>Curated Holiday Destinations</h3>
+              <p>Active India travel itineraries</p>
             </div>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => onNavigateTab('bookings')}
-            >
-              View Manifest <ArrowRight size={13} />
+            <button className="pane-link-btn" onClick={() => onNavigateTab('holidays')}>
+              View All ({places.length}) <ArrowRight size={14} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {bookings.slice(0, 4).map((booking) => (
-              <div
-                key={booking.id}
-                style={{
-                  padding: '12px 14px',
-                  background: 'var(--ivory-dim)',
-                  borderRadius: 'var(--radius-sm)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Ticket size={14} color="var(--coral)" />
-                    <strong style={{ fontSize: '13.5px' }}>{booking.passengerName}</strong>
+          <div className="pane-content">
+            {featuredPlaces.length > 0 ? (
+              <div className="dashboard-places-list">
+                {featuredPlaces.map((place) => (
+                  <div key={place._id || place.id} className="dashboard-place-item">
+                    <img
+                      src={place.img}
+                      alt={place.name}
+                      className="dashboard-place-thumb"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80';
+                      }}
+                    />
+                    <div className="dashboard-place-info">
+                      <strong>{place.name}</strong>
+                      <div className="dashboard-place-meta">
+                        <span>{place.city}, {place.state}</span>
+                        <span className="lead-meta-sep">•</span>
+                        <span>{place.days || `${place.durationDays || 5} Days`}</span>
+                      </div>
+                      <div className="dashboard-place-price">
+                        From ₹{place.price?.toLocaleString('en-IN') || '14,999'}/person
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#7a7267', marginTop: '2px' }}>
-                    {booking.tripName}
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <strong style={{ fontSize: '13px', color: 'var(--charcoal)' }}>
-                    {formatCurrency(booking.totalAmount)}
-                  </strong>
-                  <div style={{ fontSize: '11px', color: 'var(--sage-dark)', fontWeight: 600 }}>
-                    {booking.status}
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="pane-empty">
+                <Compass size={32} color="#9ca3af" />
+                <p>No holiday destinations loaded.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

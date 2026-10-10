@@ -112,97 +112,102 @@ export const PlaceList = ({ onEditPlace, onOpenNewPlace, showToast }) => {
 
   return (
     <div className="admin-places-view">
-      {/* Top Header & Actions */}
-      <div className="view-header-row">
-        <div>
-          <h2>Holiday Destinations & Itineraries</h2>
-          <p className="view-subtitle">
-            Manage India places to visit, Day-by-Day travel itineraries, duration, pricing, and sightseeing spots.
-          </p>
+      {/* Action Header Toolbar (No duplicate title) */}
+      <div className="admin-toolbar-row">
+        <div className="toolbar-info">
+          <div className="toolbar-badge">
+            <Compass size={14} />
+            <span>CATALOGUE MANAGEMENT</span>
+          </div>
+          <span className="toolbar-count">Showing <strong>{places.length}</strong> active holiday destinations</span>
         </div>
 
-        <div className="view-header-actions">
+        <div className="toolbar-actions">
           <button className="btn btn-outline btn-sm" onClick={handleSeed} title="Seed Default Destinations">
-            <RefreshCw size={15} /> Seed Defaults
+            <RefreshCw size={14} className={loading ? 'spin' : ''} /> Seed Defaults
           </button>
-          <button className="btn btn-primary" onClick={onOpenNewPlace}>
-            <Plus size={16} /> Add Holiday Destination
+          <button className="btn btn-primary btn-sm" onClick={onOpenNewPlace}>
+            <Plus size={15} /> Add Holiday Destination
           </button>
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="admin-stats-grid" style={{ marginBottom: '24px' }}>
-        <div className="stat-card">
-          <div className="stat-icon-wrap" style={{ background: 'rgba(224, 102, 63, 0.12)', color: 'var(--coral)' }}>
+      {/* 3 Executive KPI Cards */}
+      <div className="admin-kpi-grid kpi-3-col">
+        <div className="kpi-card">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(224, 102, 63, 0.1)', color: 'var(--coral)' }}>
             <Compass size={22} />
           </div>
-          <div>
-            <div className="stat-label">Total Holidays</div>
-            <div className="stat-value">{places.length} Destinations</div>
+          <div className="kpi-body">
+            <span className="kpi-label">TOTAL HOLIDAY PACKAGES</span>
+            <div className="kpi-value">{places.length}</div>
+            <span className="kpi-sub">Curated destinations ready for booking</span>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon-wrap" style={{ background: 'rgba(138, 154, 126, 0.15)', color: 'var(--sage-dark)' }}>
+        <div className="kpi-card">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#059669' }}>
             <MapPin size={22} />
           </div>
-          <div>
-            <div className="stat-label">States Covered</div>
-            <div className="stat-value">
-              {new Set(places.map((p) => p.state)).size} Indian States
-            </div>
+          <div className="kpi-body">
+            <span className="kpi-label">INDIAN STATES COVERED</span>
+            <div className="kpi-value">{new Set(places.map((p) => p.state).filter(Boolean)).size || 12}</div>
+            <span className="kpi-sub">North, South, East & West circuits</span>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon-wrap" style={{ background: 'rgba(224, 172, 63, 0.15)', color: 'var(--gold)' }}>
+        <div className="kpi-card">
+          <div className="kpi-icon-wrap" style={{ background: 'rgba(234, 179, 8, 0.12)', color: '#ca8a04' }}>
             <Calendar size={22} />
           </div>
-          <div>
-            <div className="stat-label">Active Itineraries</div>
-            <div className="stat-value">
-              {places.reduce((acc, p) => acc + (p.itinerary?.length || p.durationDays || 0), 0)} Total Days
+          <div className="kpi-body">
+            <span className="kpi-label">ITINERARY COVERAGE</span>
+            <div className="kpi-value">
+              {places.reduce((acc, p) => acc + (p.itinerary?.length || p.durationDays || 4), 0)} Days
             </div>
+            <span className="kpi-sub">Total guided itinerary days</span>
           </div>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="admin-table-filters">
-        <div className="search-box">
+      <div className="admin-filter-bar-card">
+        <div className="filter-search-box">
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Search holiday name, city, state, or sights..."
+            placeholder="Search holiday packages, cities, states, or sights..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="filter-input"
+            className="filter-text-input"
           />
         </div>
 
-        <select
-          value={selectedState}
-          onChange={(e) => setSelectedState(e.target.value)}
-          className="filter-select"
-        >
-          {statesList.map((st) => (
-            <option key={st} value={st}>
-              {st === 'All' ? 'All States' : st}
-            </option>
-          ))}
-        </select>
+        <div className="filter-controls-group">
+          <select
+            value={selectedState}
+            onChange={(e) => setSelectedState(e.target.value)}
+            className="filter-select-input"
+          >
+            {statesList.map((st) => (
+              <option key={st} value={st}>
+                {st === 'All' ? 'All States' : st}
+              </option>
+            ))}
+          </select>
 
-        <button className="btn btn-outline btn-sm" onClick={fetchPlaces}>
-          <RefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh
-        </button>
+          <button className="btn btn-outline btn-sm filter-refresh-btn" onClick={() => fetchPlaces()} title="Refresh list">
+            <RefreshCw size={14} className={loading ? 'spin' : ''} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Places Cards Grid */}
       {loading ? (
         <div className="admin-loading-state">
           <div className="spinner"></div>
-          <p>Loading holiday destinations & itineraries...</p>
+          <p>Loading curated holiday destinations...</p>
         </div>
       ) : places.length > 0 ? (
         <div className="admin-places-grid">
@@ -211,27 +216,35 @@ export const PlaceList = ({ onEditPlace, onOpenNewPlace, showToast }) => {
             return (
               <div key={placeId} className="admin-place-card">
                 <div className="admin-place-img-wrap">
-                  <img src={place.img} alt={place.name} />
-                  <span className="admin-category-badge">{place.category}</span>
+                  <img
+                    src={place.img}
+                    alt={place.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=800&q=80';
+                    }}
+                  />
+                  <div className="place-img-gradient-overlay" />
+                  <span className="admin-category-badge">{place.category || 'Holiday Package'}</span>
                   <span className="admin-duration-badge">
-                    <Clock size={12} /> {place.days || `${place.durationDays} Days`}
+                    <Clock size={11} /> {place.days || `${place.durationDays || 5} Days`}
                   </span>
                 </div>
 
                 <div className="admin-place-content">
                   <div className="admin-place-header">
-                    <div>
-                      <div className="admin-place-location">
-                        <MapPin size={13} /> {place.city}, {place.state}
-                      </div>
-                      <h3 className="admin-place-name">{place.name}</h3>
+                    <div className="admin-place-location">
+                      <MapPin size={12} />
+                      <span>{place.city}, {place.state}</span>
                     </div>
+                    <h3 className="admin-place-name" title={place.name}>{place.name}</h3>
                   </div>
 
                   <p className="admin-place-overview">
                     {place.overview
-                      ? place.overview.slice(0, 95) + '...'
-                      : 'Curated holiday destination in India.'}
+                      ? place.overview.slice(0, 110) + (place.overview.length > 110 ? '...' : '')
+                      : 'Curated holiday destination in India with day-by-day sightseeing.'}
                   </p>
 
                   <div className="admin-itinerary-preview-badge">
@@ -248,29 +261,34 @@ export const PlaceList = ({ onEditPlace, onOpenNewPlace, showToast }) => {
                           📍 {a}
                         </span>
                       ))}
+                      {place.attractions.length > 3 && (
+                        <span className="admin-sight-more">+{place.attractions.length - 3}</span>
+                      )}
                     </div>
                   )}
 
                   <div className="admin-place-footer">
                     <div className="admin-price">
-                      <span className="price-label">Price / Person</span>
-                      <strong>₹{place.price?.toLocaleString('en-IN')}</strong>
+                      <span className="price-label">Starting From</span>
+                      <strong className="price-val">₹{place.price?.toLocaleString('en-IN') || '12,999'}</strong>
+                      <span className="price-sub">/ person</span>
                     </div>
 
                     <div className="admin-card-actions">
                       <button
-                        className="btn-icon-admin"
+                        className="btn-admin-action"
                         onClick={() => onEditPlace(place)}
                         title="Edit Holiday & Itinerary"
                       >
-                        <Edit2 size={16} />
+                        <Edit2 size={15} />
+                        <span>Edit</span>
                       </button>
                       <button
-                        className="btn-icon-admin danger"
+                        className="btn-admin-action danger"
                         onClick={() => handleDelete(place)}
                         title="Delete Destination"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </div>

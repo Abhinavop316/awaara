@@ -33,7 +33,7 @@ export const DEFAULT_TRIPS = [
   {
     id: 'kashmir',
     name: 'Kashmir Diaries',
-    img: 'https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=900&q=80',
+    img: 'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=900&q=80',
     source: 'Jammu / Srinagar',
     destination: 'Kashmir Valley',
     price: 27999,

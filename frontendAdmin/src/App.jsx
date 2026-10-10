@@ -7,12 +7,9 @@ import { Toast } from './components/common/Toast';
 
 // Views
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
-import { TripList } from './components/trips/TripList';
-import { TripModal } from './components/trips/TripModal';
 import { PlaceList } from './components/places/PlaceList';
 import { PlaceModal } from './components/places/PlaceModal';
 import { EnquiriesList } from './components/enquiries/EnquiriesList';
-import { BookingsManifest } from './components/bookings/BookingsManifest';
 
 export function AdminApp() {
   const { isAuthenticated } = useAuth();
@@ -20,9 +17,6 @@ export function AdminApp() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Modals state
-  const [isTripModalOpen, setIsTripModalOpen] = useState(false);
-  const [editingTrip, setEditingTrip] = useState(null);
-
   const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false);
   const [editingPlace, setEditingPlace] = useState(null);
 
@@ -60,19 +54,15 @@ export function AdminApp() {
         <Navbar
           activeTab={activeTab}
           onToggleSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          onOpenNewTrip={() => {
-            setEditingTrip(null);
-            setIsTripModalOpen(true);
-          }}
         />
 
         <main className="admin-content">
           {activeTab === 'dashboard' && (
             <DashboardOverview
               onNavigateTab={setActiveTab}
-              onOpenNewTrip={() => {
-                setEditingTrip(null);
-                setIsTripModalOpen(true);
+              onOpenNewPlace={() => {
+                setEditingPlace(null);
+                setIsPlaceModalOpen(true);
               }}
             />
           )}
@@ -94,30 +84,6 @@ export function AdminApp() {
           {activeTab === 'enquiries' && (
             <EnquiriesList showToast={showToast} />
           )}
-
-          {activeTab === 'trips' && (
-            <TripList
-              onEditTrip={(trip) => {
-                setEditingTrip(trip);
-                setIsTripModalOpen(true);
-              }}
-              onOpenNewTrip={() => {
-                setEditingTrip(null);
-                setIsTripModalOpen(true);
-              }}
-              showToast={showToast}
-            />
-          )}
-
-          {activeTab === 'bookings' && (
-            <BookingsManifest
-              showToast={showToast}
-              onEditTrip={(trip) => {
-                setEditingTrip(trip);
-                setIsTripModalOpen(true);
-              }}
-            />
-          )}
         </main>
       </div>
 
@@ -131,16 +97,6 @@ export function AdminApp() {
         placeToEdit={editingPlace}
         showToast={showToast}
         onSaveSuccess={() => {}}
-      />
-
-      <TripModal
-        isOpen={isTripModalOpen}
-        onClose={() => {
-          setIsTripModalOpen(false);
-          setEditingTrip(null);
-        }}
-        tripToEdit={editingTrip}
-        showToast={showToast}
       />
 
       {/* Global Toast */}

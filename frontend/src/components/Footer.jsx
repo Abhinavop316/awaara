@@ -6,7 +6,10 @@ export const Footer = () => {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <h3>Awaara</h3>
+            <div className="footer-brand-header">
+              <img src="/logo.png" alt="Awaara Logo" className="footer-logo-img" />
+              <h3>Awaara</h3>
+            </div>
             <p>Curated journeys for curious, conscious people.</p>
           </div>
           <div className="footer-col">

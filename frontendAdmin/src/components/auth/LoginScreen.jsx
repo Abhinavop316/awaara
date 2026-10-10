@@ -39,7 +39,10 @@ export const LoginScreen = () => {
   return (
     <div className="login-wrap">
       <div className="login-card">
-        <div className="login-logo">AWAARA</div>
+        <div className="login-logo-wrap">
+          <img src="/logo.png" alt="Awaara Logo" className="login-logo-img" />
+          <div className="login-logo">AWAARA</div>
+        </div>
         <p className="login-sub">Trip, Fleet & Bus Layout Administration</p>
 
         <div className="login-demo-box">

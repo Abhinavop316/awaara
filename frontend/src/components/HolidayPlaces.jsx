@@ -359,6 +359,11 @@ export const HolidayPlaces = ({ onSelectPlace, onBookPlace, onInquirePlace }) =>
                       alt={place.name}
                       loading="lazy"
                       className="holiday-card-img"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80';
+                      }}
                     />
                     <div className="card-top-tags">
                       <span className="category-pill">{place.category}</span>

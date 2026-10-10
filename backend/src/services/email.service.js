@@ -1,6 +1,20 @@
 const { Resend } = require("resend");
 
 /**
+ * Format string to Title Case (e.g. "abhinav sharma" -> "Abhinav Sharma")
+ * @param {string} str
+ * @returns {string}
+ */
+const formatName = (str) => {
+  if (!str) return "Traveler";
+  return str
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
+/**
  * Send Holiday Enquiry confirmation email to traveler using Resend API
  * @param {Object} enquiryData
  * @returns {Promise<Object>}
@@ -38,102 +52,140 @@ exports.sendEnquiryConfirmationEmail = async (enquiryData) => {
 
   try {
     const resend = new Resend(apiKey);
+    const formattedName = formatName(name);
+
+    const locationDetails = [city, state].filter(Boolean).join(", ");
 
     const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Holiday Enquiry Received - Awaara Group</title>
-      <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f6f3ee; margin: 0; padding: 20px; color: #211d1a; }
-        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
-        .header { background: #211d1a; padding: 32px 24px; text-align: center; color: #FAF6EF; }
-        .logo { font-size: 26px; font-weight: 800; letter-spacing: 3px; color: #FAF6EF; margin: 0; }
-        .tagline { font-size: 11px; letter-spacing: 2px; color: #E0663F; text-transform: uppercase; margin-top: 6px; }
-        .content { padding: 32px 28px; }
-        .greeting { font-size: 20px; font-weight: 700; color: #211d1a; margin-bottom: 12px; }
-        .intro-text { font-size: 15px; line-height: 1.6; color: #4a453f; margin-bottom: 24px; }
-        .card { background: #faf6ef; border: 1px solid rgba(224, 102, 63, 0.2); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
-        .card-title { font-size: 16px; font-weight: 700; color: #E0663F; margin-top: 0; margin-bottom: 14px; border-bottom: 1px dashed rgba(33,29,26,0.15); padding-bottom: 8px; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
-        .detail-label { color: #7b746a; font-weight: 500; }
-        .detail-value { color: #211d1a; font-weight: 600; text-align: right; }
-        .callout { background: rgba(138, 154, 126, 0.15); border-left: 4px solid #8A9A7E; padding: 14px 18px; border-radius: 6px; font-size: 14px; color: #2c3825; line-height: 1.5; margin-bottom: 24px; }
-        .footer { background: #211d1a; padding: 20px; text-align: center; color: rgba(250, 246, 239, 0.6); font-size: 12px; }
-        .footer a { color: #E0663F; text-decoration: none; }
-      </style>
+      <title>Holiday Enquiry - Awaara</title>
     </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1 class="logo">AWAARA</h1>
-          <div class="tagline">Curated Indian Holidays & Expeditions</div>
-        </div>
-        
-        <div class="content">
-          <div class="greeting">Hi ${name},</div>
-          <p class="intro-text">
-            Thank you for reaching out to <strong>Awaara Group</strong>! We have received your holiday enquiry for <strong>${placeName}</strong> (${city || "India"}, ${state || ""}).
-          </p>
-          
-          <div class="card">
-            <div class="card-title">✨ Enquiry Summary</div>
-            <table width="100%" cellpadding="6" cellspacing="0" style="border-collapse: collapse; font-size: 14px;">
+    <body style="margin: 0; padding: 24px 12px; background-color: #f6f4ee; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #231f1d; -webkit-font-smoothing: antialiased;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="center">
+            <!-- Main Card Container -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 580px; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e7e2d8; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);">
+              
+              <!-- Editorial Header / Masthead -->
               <tr>
-                <td style="color: #7b746a;">Holiday Destination:</td>
-                <td style="text-align: right; font-weight: bold; color: #211d1a;">${placeName}</td>
+                <td style="background-color: #1a1614; padding: 36px 30px; text-align: center;">
+                  <div style="font-family: 'Playfair Display', Georgia, 'Times New Roman', serif; font-size: 26px; font-weight: 700; letter-spacing: 4px; color: #FAF6EF; text-transform: uppercase; margin: 0; line-height: 1.2;">
+                    AWAARA
+                  </div>
+                  <div style="font-size: 10.5px; letter-spacing: 2.5px; color: #d97757; text-transform: uppercase; margin-top: 8px; font-weight: 600;">
+                    Curated Journeys & Expeditions
+                  </div>
+                  <div style="width: 36px; height: 1.5px; background-color: #d97757; margin: 16px auto 0;"></div>
+                </td>
               </tr>
+
+              <!-- Main Body Content -->
               <tr>
-                <td style="color: #7b746a;">Preferred Timing:</td>
-                <td style="text-align: right; font-weight: 600;">${timing || "Flexible"}</td>
+                <td style="padding: 36px 32px 28px;">
+                  
+                  <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 600; color: #1a1614; margin-bottom: 16px; line-height: 1.3;">
+                    Dear ${formattedName},
+                  </div>
+
+                  <p style="font-size: 14.5px; line-height: 1.65; color: #4a453f; margin: 0 0 24px 0;">
+                    Thank you for your interest in travelling with Awaara. We have received your holiday enquiry for <strong>${placeName}</strong>${locationDetails ? ` (${locationDetails})` : ""}.
+                  </p>
+
+                  <!-- Enquiry Details Box -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #faf8f5; border: 1px solid #ebe6dd; border-radius: 6px; margin-bottom: 24px; overflow: hidden;">
+                    <tr>
+                      <td style="padding: 13px 18px; border-bottom: 1px solid #ebe6dd; background-color: #f3efe8;">
+                        <span style="font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #70675d;">
+                          Enquiry Details
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 14px 18px;">
+                        <table width="100%" cellpadding="6" cellspacing="0" border="0" style="font-size: 13.5px; border-collapse: collapse;">
+                          <tr>
+                            <td style="color: #7b746a; width: 40%; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">Destination</td>
+                            <td style="color: #1a1614; font-weight: 600; text-align: right; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">${placeName}</td>
+                          </tr>
+                          <tr>
+                            <td style="color: #7b746a; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">Travel Window</td>
+                            <td style="color: #1a1614; font-weight: 500; text-align: right; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">${timing || "Upcoming Season"}</td>
+                          </tr>
+                          <tr>
+                            <td style="color: #7b746a; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">Travellers</td>
+                            <td style="color: #1a1614; font-weight: 500; text-align: right; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">${passengers} Guest${passengers > 1 ? "s" : ""}</td>
+                          </tr>
+                          <tr>
+                            <td style="color: #7b746a; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">Departure / Origin</td>
+                            <td style="color: #1a1614; font-weight: 500; text-align: right; padding: 8px 0; border-bottom: 1px solid #f0ebe2;">${departureCity || "Delhi NCR"}</td>
+                          </tr>
+                          <tr>
+                            <td style="color: #7b746a; padding: 8px 0; ${specialRequests ? 'border-bottom: 1px solid #f0ebe2;' : ''}">Suggested Duration</td>
+                            <td style="color: #1a1614; font-weight: 500; text-align: right; padding: 8px 0; ${specialRequests ? 'border-bottom: 1px solid #f0ebe2;' : ''}">${duration || "5 Days"}</td>
+                          </tr>
+                          ${
+                            specialRequests
+                              ? `
+                          <tr>
+                            <td style="color: #7b746a; vertical-align: top; padding: 8px 0;">Special Requests</td>
+                            <td style="color: #1a1614; font-weight: 500; text-align: right; padding: 8px 0;">${specialRequests}</td>
+                          </tr>
+                          `
+                              : ""
+                          }
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Next Steps / Consultation Info -->
+                  <div style="border-left: 3px solid #1a1614; padding-left: 16px; margin: 24px 0;">
+                    <div style="font-size: 13px; font-weight: 700; color: #1a1614; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+                      What Happens Next
+                    </div>
+                    <p style="font-size: 13.5px; line-height: 1.6; color: #5a544d; margin: 0;">
+                      Our travel curators are reviewing your travel preferences and curating a bespoke itinerary. A dedicated specialist will reach out to you directly on <strong>${phone}</strong> with the proposal and quotation.
+                    </p>
+                  </div>
+
+                  <p style="font-size: 13px; line-height: 1.6; color: #7b746a; margin: 24px 0 0 0;">
+                    If you have additional requirements or wish to share specific preferences, feel free to reply directly to this email.
+                  </p>
+
+                  <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #eeebe4;">
+                    <div style="font-size: 13px; color: #7b746a;">Warm regards,</div>
+                    <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-weight: 700; color: #1a1614; margin-top: 4px;">
+                      The Awaara Journeys Team
+                    </div>
+                  </div>
+
+                </td>
               </tr>
+
+              <!-- Clean Luxury Footer -->
               <tr>
-                <td style="color: #7b746a;">Number of Passengers:</td>
-                <td style="text-align: right; font-weight: 600;">${passengers} Traveler(s)</td>
+                <td style="background-color: #faf8f5; border-top: 1px solid #eeebe4; padding: 22px 30px; text-align: center;">
+                  <div style="font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #8c8275; margin-bottom: 4px;">
+                    Awaara Journeys & Expeditions
+                  </div>
+                  <div style="font-size: 11.5px; color: #a3998c; line-height: 1.5;">
+                    Curated journeys for curious, conscious travellers.
+                  </div>
+                  <div style="font-size: 11px; color: #a3998c; margin-top: 8px;">
+                    © ${new Date().getFullYear()} Awaara. All rights reserved.
+                  </div>
+                </td>
               </tr>
-              <tr>
-                <td style="color: #7b746a;">Departure / Pickup City:</td>
-                <td style="text-align: right; font-weight: 600;">${departureCity || "Delhi NCR"}</td>
-              </tr>
-              <tr>
-                <td style="color: #7b746a;">Recommended Duration:</td>
-                <td style="text-align: right; font-weight: 600;">${duration || "5 Days"}</td>
-              </tr>
-              ${
-                specialRequests
-                  ? `
-              <tr>
-                <td style="color: #7b746a; vertical-align: top;">Special Requests:</td>
-                <td style="text-align: right; font-weight: 600;">${specialRequests}</td>
-              </tr>
-              `
-                  : ""
-              }
+
             </table>
-          </div>
-
-          <div class="callout">
-            🌟 <strong>What's Next?</strong><br>
-            Our dedicated holiday concierge team is already reviewing your preferences and will get right back to you on <strong>${phone}</strong> and <strong>${email}</strong> with your personalized Day-by-Day travel itinerary, stay options, and quotation!
-          </div>
-
-          <p style="font-size: 14px; color: #7b746a; line-height: 1.5;">
-            Need immediate help or want to speak with a holiday curator? Reply directly to this email or call our 24x7 support desk.
-          </p>
-
-          <p style="font-size: 14px; font-weight: bold; color: #211d1a; margin-top: 24px;">
-            Warm regards,<br>
-            <span style="color: #E0663F;">The Awaara Group Holidays Team</span>
-          </p>
-        </div>
-
-        <div class="footer">
-          © ${new Date().getFullYear()} Awaara Group. All Rights Reserved.<br>
-          <a href="https://awaara.com">www.awaara.com</a> · contact@awaara.com
-        </div>
-      </div>
+          </td>
+        </tr>
+      </table>
     </body>
     </html>
     `;
@@ -141,7 +193,7 @@ exports.sendEnquiryConfirmationEmail = async (enquiryData) => {
     const data = await resend.emails.send({
       from: fromEmail,
       to: [email],
-      subject: `Awaara Group - We have received your holiday enquiry for ${placeName}!`,
+      subject: `Enquiry Received: ${placeName} | Awaara`,
       html: htmlContent,
     });
 

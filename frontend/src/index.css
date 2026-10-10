@@ -212,18 +212,55 @@ header.nav.solid {
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: 'Playfair Display', serif;
   font-weight: 700;
   font-size: 24px;
   letter-spacing: 0.5px;
   color: var(--ivory);
-  transition: color 0.4s ease;
+  transition: color 0.4s ease, opacity 0.25s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.logo:hover {
+  opacity: 0.95;
+}
+
+.logo-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 1.5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  flex-shrink: 0;
+}
+
+.logo:hover .logo-img {
+  transform: scale(1.08) rotate(-3deg);
+  box-shadow: 0 4px 16px rgba(224, 90, 71, 0.3);
+}
+
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 header.nav.solid .logo {
   color: var(--charcoal);
+}
+
+header.nav.solid .logo-img {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .nav-links {
@@ -1188,10 +1225,33 @@ footer {
   }
 }
 
+.footer-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.footer-logo-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 1.5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.footer-brand:hover .footer-logo-img {
+  transform: scale(1.06);
+}
+
 .footer-brand h3 {
   color: var(--ivory);
   font-size: 22px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
 }
 
 .footer-brand p {
@@ -3231,6 +3291,12 @@ header.nav.solid .nav-user-avatar-btn:hover {
 @media (max-width: 380px) {
   .logo {
     font-size: 20px;
+    gap: 8px;
+  }
+
+  .logo-img {
+    width: 34px;
+    height: 34px;
   }
 
   .hero h1 {
@@ -3693,66 +3759,90 @@ header.nav.solid .nav-user-avatar-btn:hover {
 
 .holiday-card-footer {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 16px;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 14px;
   border-top: 1px solid rgba(33, 29, 26, 0.08);
   margin-top: auto;
 }
 
+.holiday-card-price {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .holiday-card-price .price-sub {
-  display: block;
   font-size: 11px;
+  font-weight: 700;
   color: #8c857b;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .holiday-card-price .price-val {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 21px;
+  font-weight: 800;
   color: var(--charcoal);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .holiday-card-price .per-person {
-  font-size: 11px;
-  font-weight: 400;
-  color: #777;
-  margin-left: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #78716c;
 }
 
 .holiday-card-actions {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
 }
 
 .btn-view-itinerary {
-  padding: 8px 14px;
-  font-size: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--charcoal);
   background: var(--ivory);
-  border: 1px solid rgba(33, 29, 26, 0.14);
+  border: 1px solid rgba(33, 29, 26, 0.16);
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .btn-view-itinerary:hover {
   background: #ffffff;
   border-color: var(--charcoal);
+  transform: translateY(-1px);
 }
 
 .btn-book-quick {
-  padding: 8px 14px;
-  font-size: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #ffffff;
   background: var(--coral);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(224, 102, 63, 0.22);
 }
 
 .btn-book-quick:hover {
   background: var(--coral-dark);
+  box-shadow: 0 4px 12px rgba(224, 102, 63, 0.32);
+  transform: translateY(-1px);
 }
 
 /* Sentinel & Infinite Loading */
@@ -4799,11 +4889,11 @@ header.nav.solid .nav-user-avatar-btn:hover {
   max-width: 440px;
 }
 
-.enquiry-success-email-box {
-  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
-  border: 1.5px solid #a7f3d0;
-  border-radius: 14px;
-  padding: 16px 20px;
+.enquiry-success-details-card {
+  background: #faf8f5;
+  border: 1px solid #ebe5da;
+  border-radius: 12px;
+  padding: 18px 22px;
   text-align: left;
   margin-bottom: 26px;
   max-width: 460px;
@@ -4811,20 +4901,19 @@ header.nav.solid .nav-user-avatar-btn:hover {
   box-sizing: border-box;
 }
 
-.email-box-header {
-  font-size: 13.5px;
+.enquiry-summary-badge {
+  font-size: 11px;
   font-weight: 700;
-  color: #065f46;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--coral, #e0663f);
   margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
-.email-box-text {
-  font-size: 13px;
-  color: #1f2937;
-  line-height: 1.55;
+.enquiry-summary-text {
+  font-size: 13.5px;
+  color: #4b5563;
+  line-height: 1.6;
   margin: 0;
 }
 

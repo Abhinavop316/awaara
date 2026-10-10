@@ -1,8 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
-  Compass,
-  Users,
   LayoutDashboard,
   LogOut,
   X,
@@ -16,9 +14,7 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
     { id: 'holidays', label: 'Holidays & Places', icon: <MapPin size={18} /> },
-    { id: 'enquiries', label: 'Holiday Enquiries', icon: <Mail size={18} /> },
-    { id: 'trips', label: 'Trips Manager', icon: <Compass size={18} /> },
-    { id: 'bookings', label: 'Passenger Manifest', icon: <Users size={18} /> }
+    { id: 'enquiries', label: 'Holiday Enquiries', icon: <Mail size={18} /> }
   ];
 
   return (
@@ -31,6 +27,7 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
       <aside className={`admin-sidebar ${isOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="/logo.png" alt="Awaara" className="sidebar-logo-img" />
             <span className="sidebar-logo">AWAARA</span>
             <span className="sidebar-badge">OPS</span>
           </div>

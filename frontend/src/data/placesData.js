@@ -14,7 +14,7 @@ export const INDIA_PLACES_DATA = [
     reviewsCount: 312,
     img: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1000&q=80",
     gallery: [
-      "https://images.unsplash.com/photo-1596761633008-8e8156108169?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1586500036706-41963de24d8b?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"
     ],
@@ -97,7 +97,7 @@ export const INDIA_PLACES_DATA = [
     bestTimeToVisit: "March to December",
     rating: 4.95,
     reviewsCount: 420,
-    img: "https://images.unsplash.com/photo-1566837945700-30057527ade0?auto=format&fit=crop&w=1000&q=80",
+    img: "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=1000&q=80",
     gallery: [
       "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
@@ -187,7 +187,7 @@ export const INDIA_PLACES_DATA = [
     reviewsCount: 280,
     img: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1000&q=80",
     gallery: [
-      "https://images.unsplash.com/photo-1609137144822-2632a76f2845?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=800&q=80"
     ],
     overview: "Immerse yourself in grand maharaja palaces, golden desert sunsets, lakeside serenity, and vibrant bazaars in the Pink and White cities of Rajasthan.",
@@ -591,7 +591,7 @@ export const INDIA_PLACES_DATA = [
     bestTimeToVisit: "March to May & October to December",
     rating: 4.91,
     reviewsCount: 198,
-    img: "https://images.unsplash.com/photo-1596761633008-8e8156108169?auto=format&fit=crop&w=1000&q=80",
+    img: "https://images.unsplash.com/photo-1571536802807-30451e3955d8?auto=format&fit=crop&w=1000&q=80",
     gallery: [
       "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=800&q=80"
     ],
@@ -830,7 +830,7 @@ export const INDIA_PLACES_DATA = [
     reviewsCount: 220,
     img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80",
     gallery: [
-      "https://images.unsplash.com/photo-1596761633008-8e8156108169?auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=800&q=80"
     ],
     overview: "Explore the Abode of Clouds: bio-engineered Double Decker Living Root Bridges, crystal clear Umngot River in Dawki, and thunderous waterfalls in Cherrapunji.",
     highlights: [
@@ -909,7 +909,7 @@ export const INDIA_PLACES_DATA = [
     reviewsCount: 245,
     img: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&w=1000&q=80",
     gallery: [
-      "https://images.unsplash.com/photo-1609137144822-2632a76f2845?auto=format&fit=crop&w=800&q=80"
+      "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=800&q=80"
     ],
     overview: "Step into Arabian Nights amidst golden yellow sandstone fortresses, intricately carved havelis, camel rides over Sam Sand Dunes, and desert camp cultural nights.",
     highlights: [

@@ -1,24 +1,18 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useAdminData } from '../../context/AdminDataContext';
 import { Menu } from 'lucide-react';
 
-export const Navbar = ({ activeTab, onToggleSidebar, onOpenNewTrip }) => {
+export const Navbar = ({ activeTab, onToggleSidebar }) => {
   const { adminUser, logout } = useAuth();
-  const { resetToDemo } = useAdminData();
 
   const getTabTitle = () => {
     switch (activeTab) {
       case 'dashboard':
-        return { title: 'Operations Dashboard', subtitle: 'Overview of holidays, trips, and passenger bookings' };
+        return { title: 'Operations Dashboard', subtitle: 'Overview of India holiday destinations and traveler leads' };
       case 'holidays':
-        return { title: 'Holidays & Places to Visit', subtitle: 'Manage India holiday destinations, Day-by-Day itineraries, and attractions' };
+        return { title: 'Holidays & Places to Visit', subtitle: 'Manage India destinations, Day-by-Day travel itineraries, and pricing' };
       case 'enquiries':
-        return { title: 'Holiday Enquiries & Leads', subtitle: 'Traveler inquiries, customized itinerary requests, and Resend email status' };
-      case 'trips':
-        return { title: 'Trips Management', subtitle: 'Create, edit, and schedule curated travel experiences' };
-      case 'bookings':
-        return { title: 'Passenger Manifest', subtitle: 'Real-time traveler bookings & passenger manifest' };
+        return { title: 'Holiday Enquiries & Leads', subtitle: 'Review traveler requests, follow-ups, and dispatch itineraries' };
       default:
         return { title: 'Awaara Admin', subtitle: 'Operations Portal' };
     }
@@ -44,17 +38,10 @@ export const Navbar = ({ activeTab, onToggleSidebar, onOpenNewTrip }) => {
       </div>
 
       <div className="topbar-actions">
-        <button
-          className="btn btn-outline btn-sm topbar-reset-btn"
-          onClick={() => {
-            if (window.confirm('Reset all demo trips and bookings?')) {
-              resetToDemo();
-            }
-          }}
-          title="Reset back to default sample data"
-        >
-          🔄 Reset Demo
-        </button>
+        <div className="admin-live-badge">
+          <span className="live-dot"></span>
+          <span>Live Operations</span>
+        </div>
 
         <button className="btn btn-dark btn-sm topbar-signout-btn" onClick={logout}>
           Sign Out
