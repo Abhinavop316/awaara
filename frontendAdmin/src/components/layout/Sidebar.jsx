@@ -2,12 +2,12 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   Compass,
-  Bus,
-  Grid,
   Users,
   LayoutDashboard,
   LogOut,
-  X
+  X,
+  MapPin,
+  Mail
 } from 'lucide-react';
 
 export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
@@ -15,9 +15,9 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+    { id: 'holidays', label: 'Holidays & Places', icon: <MapPin size={18} /> },
+    { id: 'enquiries', label: 'Holiday Enquiries', icon: <Mail size={18} /> },
     { id: 'trips', label: 'Trips Manager', icon: <Compass size={18} /> },
-    { id: 'buses', label: 'Fleet & Buses', icon: <Bus size={18} /> },
-    { id: 'layout-studio', label: 'Seat Layout Studio', icon: <Grid size={18} /> },
     { id: 'bookings', label: 'Passenger Manifest', icon: <Users size={18} /> }
   ];
 
@@ -80,4 +80,3 @@ export const Sidebar = ({ activeTab, setActiveTab, isOpen, onClose }) => {
     </>
   );
 };
-

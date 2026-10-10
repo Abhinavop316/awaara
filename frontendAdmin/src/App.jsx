@@ -9,9 +9,9 @@ import { Toast } from './components/common/Toast';
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
 import { TripList } from './components/trips/TripList';
 import { TripModal } from './components/trips/TripModal';
-import { BusList } from './components/buses/BusList';
-import { BusModal } from './components/buses/BusModal';
-import { SeatLayoutStudio } from './components/busLayout/SeatLayoutStudio';
+import { PlaceList } from './components/places/PlaceList';
+import { PlaceModal } from './components/places/PlaceModal';
+import { EnquiriesList } from './components/enquiries/EnquiriesList';
 import { BookingsManifest } from './components/bookings/BookingsManifest';
 
 export function AdminApp() {
@@ -23,8 +23,8 @@ export function AdminApp() {
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState(null);
 
-  const [isBusModalOpen, setIsBusModalOpen] = useState(false);
-  const [editingBus, setEditingBus] = useState(null);
+  const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false);
+  const [editingPlace, setEditingPlace] = useState(null);
 
   // Toast state
   const [toastMessage, setToastMessage] = useState('');
@@ -64,10 +64,6 @@ export function AdminApp() {
             setEditingTrip(null);
             setIsTripModalOpen(true);
           }}
-          onOpenNewBus={() => {
-            setEditingBus(null);
-            setIsBusModalOpen(true);
-          }}
         />
 
         <main className="admin-content">
@@ -78,11 +74,25 @@ export function AdminApp() {
                 setEditingTrip(null);
                 setIsTripModalOpen(true);
               }}
-              onOpenNewBus={() => {
-                setEditingBus(null);
-                setIsBusModalOpen(true);
-              }}
             />
+          )}
+
+          {activeTab === 'holidays' && (
+            <PlaceList
+              onEditPlace={(place) => {
+                setEditingPlace(place);
+                setIsPlaceModalOpen(true);
+              }}
+              onOpenNewPlace={() => {
+                setEditingPlace(null);
+                setIsPlaceModalOpen(true);
+              }}
+              showToast={showToast}
+            />
+          )}
+
+          {activeTab === 'enquiries' && (
+            <EnquiriesList showToast={showToast} />
           )}
 
           {activeTab === 'trips' && (
@@ -95,40 +105,34 @@ export function AdminApp() {
                 setEditingTrip(null);
                 setIsTripModalOpen(true);
               }}
-              onOpenNewBus={() => {
-                setEditingBus(null);
-                setIsBusModalOpen(true);
-              }}
               showToast={showToast}
             />
-          )}
-
-          {activeTab === 'buses' && (
-            <BusList
-              onEditBus={(bus) => {
-                setEditingBus(bus);
-                setIsBusModalOpen(true);
-              }}
-              onOpenNewBus={() => {
-                setEditingBus(null);
-                setIsBusModalOpen(true);
-              }}
-              onOpenStudioWithBus={() => setActiveTab('layout-studio')}
-              showToast={showToast}
-            />
-          )}
-
-          {activeTab === 'layout-studio' && (
-            <SeatLayoutStudio showToast={showToast} />
           )}
 
           {activeTab === 'bookings' && (
-            <BookingsManifest showToast={showToast} />
+            <BookingsManifest
+              showToast={showToast}
+              onEditTrip={(trip) => {
+                setEditingTrip(trip);
+                setIsTripModalOpen(true);
+              }}
+            />
           )}
         </main>
       </div>
 
       {/* Modals */}
+      <PlaceModal
+        isOpen={isPlaceModalOpen}
+        onClose={() => {
+          setIsPlaceModalOpen(false);
+          setEditingPlace(null);
+        }}
+        placeToEdit={editingPlace}
+        showToast={showToast}
+        onSaveSuccess={() => {}}
+      />
+
       <TripModal
         isOpen={isTripModalOpen}
         onClose={() => {
@@ -136,20 +140,6 @@ export function AdminApp() {
           setEditingTrip(null);
         }}
         tripToEdit={editingTrip}
-        onOpenNewBus={() => {
-          setEditingBus(null);
-          setIsBusModalOpen(true);
-        }}
-        showToast={showToast}
-      />
-
-      <BusModal
-        isOpen={isBusModalOpen}
-        onClose={() => {
-          setIsBusModalOpen(false);
-          setEditingBus(null);
-        }}
-        busToEdit={editingBus}
         showToast={showToast}
       />
 

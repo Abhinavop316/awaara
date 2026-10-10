@@ -7,6 +7,7 @@ import { tripApi } from './services/tripApi';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { FeaturedTrips } from './components/FeaturedTrips';
+import { HolidayPlaces } from './components/HolidayPlaces';
 import { ComingSoon } from './components/ComingSoon';
 import { HowItWorks } from './components/HowItWorks';
 import { WhyChooseUs } from './components/WhyChooseUs';
@@ -20,6 +21,8 @@ import { Toast } from './components/Toast';
 
 // Modals
 import { TripDetailModal } from './components/modals/TripDetailModal';
+import { PlaceDetailModal } from './components/modals/PlaceDetailModal';
+import { PlaceEnquiryModal } from './components/modals/PlaceEnquiryModal';
 import { BookingModal } from './components/modals/BookingModal';
 import { InquiryModal } from './components/modals/InquiryModal';
 import { MyBookingsModal } from './components/modals/MyBookingsModal';
@@ -91,12 +94,37 @@ export function App() {
 
   // Modal States
   const [detailTrip, setDetailTrip] = useState(null);
+  const [detailPlace, setDetailPlace] = useState(null);
+  const [enquiryPlace, setEnquiryPlace] = useState(null);
   const [bookingTrip, setBookingTrip] = useState(null);
   const [inquiryDest, setInquiryDest] = useState(null);
   const [isMyBookingsOpen, setIsMyBookingsOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  // Background Scroll Lock when any modal is open
+  const isAnyModalOpen = Boolean(
+    detailTrip ||
+    detailPlace ||
+    enquiryPlace ||
+    bookingTrip ||
+    inquiryDest ||
+    isMyBookingsOpen ||
+    isAuthModalOpen ||
+    isProfileModalOpen
+  );
+
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isAnyModalOpen]);
 
   // Toast State
   const [toastMessage, setToastMessage] = useState('');
@@ -168,6 +196,33 @@ export function App() {
     setInquiryDest(dest);
   };
 
+  // Place / Holiday interactions
+  const handleSelectPlace = (place) => {
+    setDetailPlace(place);
+  };
+
+  const handleBookPlace = (place) => {
+    setDetailPlace(null);
+    // Bridge holiday place to booking modal structure
+    setBookingTrip({
+      id: place.id || place._id,
+      name: place.name,
+      destination: `${place.city}, ${place.state}`,
+      price: place.price,
+      dates: place.bestTimeToVisit || 'Custom Dates 2026',
+      duration: place.days || `${place.durationDays} Days`,
+      seats: 25,
+      busId: 'HOLIDAY-DIRECT',
+      highlight: place.highlights?.[0] || 'Curated Indian Holiday Package',
+      img: place.img
+    });
+  };
+
+  const handleInquirePlace = (place) => {
+    setDetailPlace(null);
+    setEnquiryPlace(place);
+  };
+
   const scrollToTrips = () => {
     const el = document.getElementById('trips');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -199,6 +254,13 @@ export function App() {
         onClearFilters={handleClearFilters}
       />
 
+      {/* Holiday Places to Visit in India */}
+      <HolidayPlaces
+        onSelectPlace={handleSelectPlace}
+        onBookPlace={handleBookPlace}
+        onInquirePlace={handleInquirePlace}
+      />
+
       <ComingSoon
         comingSoonList={COMING_SOON}
         onRegisterInterest={handleRegisterInterest}
@@ -227,6 +289,21 @@ export function App() {
         onClose={() => setDetailTrip(null)}
         onBookTrip={handleBookTrip}
         onJoinWaitlist={handleJoinWaitlist}
+      />
+
+      <PlaceDetailModal
+        place={detailPlace}
+        isOpen={Boolean(detailPlace)}
+        onClose={() => setDetailPlace(null)}
+        onBookPlace={handleBookPlace}
+        onInquirePlace={handleInquirePlace}
+      />
+
+      <PlaceEnquiryModal
+        place={enquiryPlace}
+        isOpen={Boolean(enquiryPlace)}
+        onClose={() => setEnquiryPlace(null)}
+        onSuccessToast={showToast}
       />
 
       <BookingModal

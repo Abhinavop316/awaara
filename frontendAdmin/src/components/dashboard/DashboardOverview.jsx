@@ -1,24 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminData } from '../../context/AdminDataContext';
 import { StatCard } from '../common/StatCard';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { placeApi } from '../../services/placeApi';
 import {
   Compass,
-  Bus,
   Users,
   CreditCard,
-  PlusCircle,
-  Grid,
   MapPin,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  Ticket
 } from 'lucide-react';
 
 export const DashboardOverview = ({
   onNavigateTab,
-  onOpenNewTrip,
-  onOpenNewBus
+  onOpenNewTrip
 }) => {
-  const { trips, buses, bookings, templates } = useAdminData();
+  const { trips, bookings } = useAdminData();
+  const [placesCount, setPlacesCount] = useState(8);
+
+  useEffect(() => {
+    placeApi.getAllPlaces().then((res) => {
+      if (res && res.success && res.places) {
+        setPlacesCount(res.total || res.places.length);
+      }
+    }).catch(() => {});
+  }, []);
 
   const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
   const openTripsCount = trips.filter((t) => t.status === 'open' || t.status === 'limited').length;
@@ -34,15 +42,15 @@ export const DashboardOverview = ({
           icon={<Compass size={22} />}
         />
         <StatCard
-          title="REGISTERED BUS FLEET"
-          value={buses.length}
-          subtext="Covering North & West corridors"
-          icon={<Bus size={22} />}
+          title="HOLIDAY DESTINATIONS"
+          value={placesCount}
+          subtext="Curated India holiday itineraries"
+          icon={<MapPin size={22} />}
         />
         <StatCard
           title="CONFIRMED PASSENGERS"
           value={bookings.length}
-          subtext="Verified digital boarding passes"
+          subtext="Verified traveler bookings"
           icon={<Users size={22} />}
         />
         <StatCard
@@ -70,24 +78,28 @@ export const DashboardOverview = ({
         }}
       >
         <div>
-          <h2 style={{ color: 'var(--ivory)', fontSize: '24px', marginBottom: '6px' }}>
-            Interactive Bus Seat Layout Studio
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(224, 102, 63, 0.25)', color: 'var(--coral)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>
+            <Sparkles size={13} />
+            <span>ALL-INDIA HOLIDAYS PORTAL</span>
+          </div>
+          <h2 style={{ color: 'var(--ivory)', fontSize: '23px', marginBottom: '6px' }}>
+            Curated India Holiday Packages & Itineraries
           </h2>
-          <p style={{ color: 'rgba(250, 246, 239, 0.75)', fontSize: '14.5px', maxWidth: '560px' }}>
-            Design and customize custom coach seating layouts, double-decker sleeper berths, and seat surcharge tiers.
+          <p style={{ color: 'rgba(250, 246, 239, 0.75)', fontSize: '14px', maxWidth: '580px', margin: 0 }}>
+            Manage Day-by-Day travel plans, iconic attractions, verified hotel stays, and custom pricing across Indian states.
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
             className="btn btn-primary"
-            onClick={() => onNavigateTab('layout-studio')}
+            onClick={() => onNavigateTab('holidays')}
           >
-            <Grid size={15} /> Launch Layout Studio →
+            <MapPin size={15} /> Manage Holiday Places →
           </button>
         </div>
       </div>
 
-      {/* Grid of 2 Panes: Upcoming Trips & Active Buses */}
+      {/* Grid of 2 Panes: Upcoming Trips & Recent Bookings */}
       <div className="dashboard-panes-grid">
         {/* Pane 1: Upcoming Trips */}
         <div className="panel-card dashboard-pane-trips" style={{ marginBottom: 0 }}>
@@ -105,65 +117,61 @@ export const DashboardOverview = ({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {trips.slice(0, 4).map((trip) => {
-              const bus = buses.find((b) => b.id === trip.busId);
-
-              return (
-                <div
-                  key={trip.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 14px',
-                    background: 'var(--ivory-dim)',
-                    borderRadius: 'var(--radius-sm)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img
-                      src={trip.img}
-                      alt={trip.name}
-                      style={{ width: '42px', height: '36px', borderRadius: '6px', objectFit: 'cover' }}
-                    />
-                    <div>
-                      <strong style={{ fontSize: '14px' }}>{trip.name}</strong>
-                      <div style={{ fontSize: '12px', color: '#7a7267' }}>
-                        {trip.dates} · {formatCurrency(trip.price)}
-                      </div>
+            {trips.slice(0, 4).map((trip) => (
+              <div
+                key={trip.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 14px',
+                  background: 'var(--ivory-dim)',
+                  borderRadius: 'var(--radius-sm)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img
+                    src={trip.img}
+                    alt={trip.name}
+                    style={{ width: '42px', height: '36px', borderRadius: '6px', objectFit: 'cover' }}
+                  />
+                  <div>
+                    <strong style={{ fontSize: '14px' }}>{trip.name}</strong>
+                    <div style={{ fontSize: '12px', color: '#7a7267' }}>
+                      {trip.dates} · {formatCurrency(trip.price)}
                     </div>
                   </div>
-
-                  <div style={{ textAlign: 'right' }}>
-                    <span className={`badge-pill badge-${trip.status}`} style={{ fontSize: '11px' }}>
-                      {trip.status.toUpperCase()}
-                    </span>
-                  </div>
                 </div>
-              );
-            })}
+
+                <div style={{ textAlign: 'right' }}>
+                  <span className={`badge-pill badge-${trip.status}`} style={{ fontSize: '11px' }}>
+                    {trip.status.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Pane 2: Registered Buses */}
-        <div className="panel-card dashboard-pane-buses" style={{ marginBottom: 0 }}>
+        {/* Pane 2: Recent Bookings */}
+        <div className="panel-card" style={{ marginBottom: 0 }}>
           <div className="panel-head">
             <div>
-              <h2>Active Fleet Coaches</h2>
-              <p>Bus routes and templates</p>
+              <h2>Recent Passenger Bookings</h2>
+              <p>Live passenger manifest & reservations</p>
             </div>
             <button
               className="btn btn-ghost btn-sm"
-              onClick={() => onNavigateTab('buses')}
+              onClick={() => onNavigateTab('bookings')}
             >
-              View Fleet <ArrowRight size={13} />
+              View Manifest <ArrowRight size={13} />
             </button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {buses.slice(0, 4).map((bus) => (
+            {bookings.slice(0, 4).map((booking) => (
               <div
-                key={bus.id}
+                key={booking.id}
                 style={{
                   padding: '12px 14px',
                   background: 'var(--ivory-dim)',
@@ -175,19 +183,19 @@ export const DashboardOverview = ({
               >
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bus size={14} color="var(--coral)" />
-                    <strong style={{ fontSize: '14px' }}>{bus.busNumber}</strong>
+                    <Ticket size={14} color="var(--coral)" />
+                    <strong style={{ fontSize: '13.5px' }}>{booking.passengerName}</strong>
                   </div>
                   <div style={{ fontSize: '12px', color: '#7a7267', marginTop: '2px' }}>
-                    {bus.source} → {bus.destination}
+                    {booking.tripName}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <strong style={{ fontSize: '13px', color: 'var(--charcoal)' }}>
-                    {bus.totalSeats} Seats
+                    {formatCurrency(booking.totalAmount)}
                   </strong>
                   <div style={{ fontSize: '11px', color: 'var(--sage-dark)', fontWeight: 600 }}>
-                    {bus.departureTime}
+                    {booking.status}
                   </div>
                 </div>
               </div>

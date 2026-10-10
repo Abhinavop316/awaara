@@ -51,6 +51,10 @@ export const Navbar = ({ onOpenMyBookings, onOpenAuth, onOpenProfile }) => {
           </a>
           <nav className="nav-links">
             <a href="#trips">Explore Trips</a>
+            <a href="#holidays" className="nav-holidays-link">
+              Holidays
+              <span className="nav-sparkle-dot"></span>
+            </a>
             <a href="#coming">Coming Soon</a>
             <a href="#destinations">Destinations</a>
             <a href="#how">How It Works</a>
@@ -169,6 +173,9 @@ export const Navbar = ({ onOpenMyBookings, onOpenAuth, onOpenProfile }) => {
       <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} id="mobileMenu">
         <a href="#trips" className="mobileLink" onClick={closeMobileMenu}>
           Explore Trips
+        </a>
+        <a href="#holidays" className="mobileLink" onClick={closeMobileMenu} style={{ color: 'var(--coral)', fontWeight: '600' }}>
+          ✨ Holidays & Places to Visit
         </a>
         <a href="#coming" className="mobileLink" onClick={closeMobileMenu}>
           Coming Soon

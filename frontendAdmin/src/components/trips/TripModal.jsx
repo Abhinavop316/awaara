@@ -2,44 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ModalWrapper } from '../common/ModalWrapper';
 import { CustomSelect } from '../common/CustomSelect';
 import { useAdminData } from '../../context/AdminDataContext';
-import { countBookableSeats } from '../../utils/layoutHelpers';
 import {
-  Bus,
-  AlertTriangle,
-  CheckCircle,
   MapPin,
   Users,
   Sparkles,
-  Plus,
-  ChevronDown,
-  Search,
-  Check,
-  ArrowRight,
   UploadCloud,
-  Image as ImageIcon,
   Link as LinkIcon,
   X,
-  FileImage,
   Calendar,
-  Compass
+  Compass,
+  Check
 } from 'lucide-react';
 
-export const TripModal = ({ isOpen, onClose, tripToEdit, showToast, onOpenNewBus }) => {
-  const { buses, templates, addTrip, updateTrip } = useAdminData();
-
-  // Helper to compute total bookable seats for any bus object
-  const getBusSeatCount = (bus) => {
-    if (!bus) return 40;
-    if (bus.totalSeats && Number(bus.totalSeats) > 0) return Number(bus.totalSeats);
-    if (bus.templateId) {
-      const tpl = templates.find((t) => t.id === bus.templateId);
-      if (tpl) {
-        const count = countBookableSeats(tpl);
-        if (count > 0) return count;
-      }
-    }
-    return 40;
-  };
+export const TripModal = ({ isOpen, onClose, tripToEdit, showToast }) => {
+  const { addTrip, updateTrip } = useAdminData();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -49,98 +25,41 @@ export const TripModal = ({ isOpen, onClose, tripToEdit, showToast, onOpenNewBus
     dates: '10–15 Nov 2026',
     duration: '5 Days',
     status: 'open',
-    highlight: 'Curated experience',
-    seats: 40,
-    busId: '',
+    highlight: 'Curated luxury travel experience',
+    seats: 20,
     month: 'Nov',
     experience: 'Adventure',
     img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80'
   });
-
-  // Custom Bus Selector Dropdown state
-  const [isBusDropdownOpen, setIsBusDropdownOpen] = useState(false);
-  const [busSearchTerm, setBusSearchTerm] = useState('');
-  const dropdownRef = useRef(null);
 
   // Image Upload Mode state ('upload' | 'url')
   const [imageInputMode, setImageInputMode] = useState('upload');
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Selected bus object for live info display
-  const selectedBus = buses.find((b) => b.id === formData.busId) || null;
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsBusDropdownOpen(false);
-      }
-    };
-    if (isBusDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isBusDropdownOpen]);
-
   useEffect(() => {
     if (tripToEdit) {
-      const busForEdit = buses.find((b) => b.id === tripToEdit.busId);
-      const detectedSeats = busForEdit ? getBusSeatCount(busForEdit) : (tripToEdit.seats || 40);
-
       setFormData({
         ...tripToEdit,
-        seats: detectedSeats
+        seats: tripToEdit.seats || 20
       });
     } else {
-      const defaultBus = buses[0] || null;
-      const initialSeats = defaultBus ? getBusSeatCount(defaultBus) : 40;
-
       setFormData({
         name: '',
-        source: defaultBus?.source || 'Delhi NCR',
-        destination: defaultBus?.destination || '',
+        source: 'Delhi NCR',
+        destination: '',
         price: 19999,
         dates: '10–15 Nov 2026',
         duration: '5 Days',
         status: 'open',
         highlight: 'Curated luxury travel experience',
-        seats: initialSeats,
-        busId: defaultBus?.id || '',
+        seats: 20,
         month: 'Nov',
         experience: 'Adventure',
         img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80'
       });
     }
-  }, [tripToEdit, isOpen, buses, templates]);
-
-  // Handler when admin changes the assigned bus coach
-  const handleSelectBus = (bus) => {
-    if (bus) {
-      const detectedSeats = getBusSeatCount(bus);
-      setFormData((prev) => ({
-        ...prev,
-        busId: bus.id,
-        seats: detectedSeats,
-        source: prev.source === 'Delhi NCR' && bus.source ? bus.source : prev.source,
-        destination: (!prev.destination || prev.destination === '') && bus.destination ? bus.destination : prev.destination
-      }));
-      setIsBusDropdownOpen(false);
-      showToast(`⚡ Auto-detected ${detectedSeats} seats from ${bus.busNumber}`);
-    }
-  };
-
-  const filteredBuses = buses.filter((b) => {
-    const q = busSearchTerm.toLowerCase();
-    return (
-      b.busNumber?.toLowerCase().includes(q) ||
-      b.name?.toLowerCase().includes(q) ||
-      b.source?.toLowerCase().includes(q) ||
-      b.destination?.toLowerCase().includes(q)
-    );
-  });
+  }, [tripToEdit, isOpen]);
 
   // Handle file drop / file pick conversion to Data URL
   const processImageFile = (file) => {
@@ -188,256 +107,39 @@ export const TripModal = ({ isOpen, onClose, tripToEdit, showToast, onOpenNewBus
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (buses.length === 0) {
-      alert('Please add a bus in Fleet Management first before creating a trip.');
-      return;
-    }
-
-    if (!formData.busId) {
-      alert('Please select an assigned bus coach for this trip.');
-      return;
-    }
-
     if (!formData.name.trim() || !formData.destination.trim()) {
       alert('Please fill out Trip Name and Destination.');
       return;
     }
 
-    // Ensure seat count is locked to the assigned bus
-    const bus = buses.find((b) => b.id === formData.busId);
-    const finalSeats = bus ? getBusSeatCount(bus) : Number(formData.seats) || 40;
-
     const payload = {
       ...formData,
-      seats: finalSeats
+      price: Number(formData.price) || 19999,
+      seats: Number(formData.seats) || 20
     };
 
     if (tripToEdit) {
       updateTrip(tripToEdit.id, payload);
-      showToast(`Trip "${formData.name}" updated successfully (${finalSeats} seats)!`);
+      showToast(`Trip "${formData.name}" updated successfully!`);
     } else {
       addTrip(payload);
-      showToast(`New trip "${formData.name}" created with ${finalSeats} detected seats!`);
+      showToast(`New trip "${formData.name}" created!`);
     }
 
     onClose();
   };
-
-  // If no buses exist yet, display an empty state prompting the admin to add a bus first
-  if (buses.length === 0) {
-    return (
-      <ModalWrapper
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Bus Registration Required"
-        subtitle="A fleet coach must be added first before configuring trips"
-        maxWidth="620px"
-      >
-        <div className="modal-body" style={{ padding: '32px 24px', textAlign: 'center' }}>
-          <div
-            style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              background: 'rgba(224, 102, 63, 0.12)',
-              color: 'var(--coral)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 18px'
-            }}
-          >
-            <Bus size={32} />
-          </div>
-
-          <h3 style={{ fontSize: '20px', color: 'var(--charcoal)', marginBottom: '8px' }}>
-            No Buses Found in Fleet
-          </h3>
-          <p style={{ fontSize: '14.5px', color: '#7a7267', lineHeight: 1.6, maxWidth: '440px', margin: '0 auto 24px' }}>
-            To create a trip, you must first register a bus coach. The trip will automatically detect available seats, AC specifications, and timing from that bus.
-          </p>
-
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button type="button" className="btn btn-outline" onClick={onClose}>
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => {
-                onClose();
-                if (onOpenNewBus) onOpenNewBus();
-              }}
-            >
-              <Plus size={16} /> Register New Bus First
-            </button>
-          </div>
-        </div>
-      </ModalWrapper>
-    );
-  }
 
   return (
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
       title={tripToEdit ? `Edit Trip: ${tripToEdit.name}` : 'Create New Curated Trip'}
-      subtitle="Select an assigned bus coach to automatically detect seating layout and available seats"
+      subtitle="Configure departure dates, pricing, passenger capacity, and trip highlights"
       maxWidth="780px"
     >
       <form onSubmit={handleSubmit}>
         <div className="modal-body">
-          {/* STEP 1: CUSTOM LUXURY BUS PICKER */}
-          <div className="bus-select-hero-box" ref={dropdownRef}>
-            <div className="bus-select-header">
-              <div className="bus-select-title">
-                <Bus size={18} color="var(--coral)" />
-                <strong>Step 1: Assign Fleet Bus Coach *</strong>
-              </div>
-              {selectedBus && (
-                <span className="bus-seats-badge">
-                  <CheckCircle size={14} />
-                  {formData.seats} Seats Auto-Detected
-                </span>
-              )}
-            </div>
-
-            {/* Custom Interactive Bus Card Trigger */}
-            <div
-              className={`custom-bus-trigger ${isBusDropdownOpen ? 'is-active' : ''}`}
-              onClick={() => setIsBusDropdownOpen(!isBusDropdownOpen)}
-              role="button"
-              tabIndex={0}
-            >
-              {selectedBus ? (
-                <div className="trigger-bus-info">
-                  <div className="trigger-bus-top">
-                    <span className="plate-badge">{selectedBus.busNumber}</span>
-                    <strong className="trigger-bus-name">{selectedBus.name}</strong>
-                    <span className="trigger-ac-tag">{selectedBus.acType || 'AC'}</span>
-                  </div>
-                  <div className="trigger-bus-sub">
-                    <span className="trigger-route">
-                      <MapPin size={13} color="var(--coral)" />
-                      {selectedBus.source} <ArrowRight size={12} style={{ display: 'inline', margin: '0 2px' }} /> {selectedBus.destination}
-                    </span>
-                    <span className="trigger-seats-tag">
-                      <Users size={12} /> {formData.seats} Bookable Seats
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="trigger-placeholder">
-                  <Bus size={18} color="#8c8275" />
-                  <span>Click to select an assigned coach from fleet...</span>
-                </div>
-              )}
-
-              <div className="trigger-chevron-wrap">
-                <span className="trigger-change-text">{selectedBus ? 'Change' : 'Select'}</span>
-                <ChevronDown
-                  size={18}
-                  style={{
-                    transform: isBusDropdownOpen ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 0.2s ease'
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Custom Animated Bus Selection Dropdown Menu */}
-            {isBusDropdownOpen && (
-              <div className="custom-bus-dropdown-panel">
-                {/* Search Bar inside Dropdown */}
-                <div className="bus-dropdown-search">
-                  <Search size={15} color="#8c8275" />
-                  <input
-                    type="text"
-                    placeholder="Search coach by number plate, name, or city..."
-                    value={busSearchTerm}
-                    onChange={(e) => setBusSearchTerm(e.target.value)}
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  {busSearchTerm && (
-                    <button
-                      type="button"
-                      className="search-clear-btn"
-                      onClick={() => setBusSearchTerm('')}
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-
-                {/* Bus List Items */}
-                <div className="bus-dropdown-list">
-                  {filteredBuses.map((bus) => {
-                    const busSeats = getBusSeatCount(bus);
-                    const isSelected = bus.id === formData.busId;
-
-                    return (
-                      <div
-                        key={bus.id}
-                        className={`bus-option-card ${isSelected ? 'selected' : ''}`}
-                        onClick={() => handleSelectBus(bus)}
-                      >
-                        <div className="bus-option-left">
-                          <div className="bus-option-header-row">
-                            <span className="plate-badge">{bus.busNumber}</span>
-                            <strong className="bus-option-name">{bus.name}</strong>
-                            <span className="bus-option-ac">{bus.acType || 'AC'}</span>
-                          </div>
-                          <div className="bus-option-route">
-                            <MapPin size={12} color="var(--coral)" />
-                            <span>
-                              {bus.source} → {bus.destination}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bus-option-right">
-                          <span className="bus-option-seats">
-                            <Users size={12} /> {busSeats} Seats
-                          </span>
-                          {isSelected && (
-                            <span className="bus-option-check">
-                              <Check size={14} color="#ffffff" />
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {filteredBuses.length === 0 && (
-                    <div className="bus-dropdown-empty">
-                      No matching buses found for "{busSearchTerm}".
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer to add another bus */}
-                <div className="bus-dropdown-footer">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline"
-                    style={{ width: '100%', justifyContent: 'center', fontSize: '13px' }}
-                    onClick={() => {
-                      setIsBusDropdownOpen(false);
-                      onClose();
-                      if (onOpenNewBus) onOpenNewBus();
-                    }}
-                  >
-                    <Plus size={14} /> + Register New Fleet Coach
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* STEP 2: TRIP DETAILS FORM */}
-          <div className="form-grid" style={{ marginTop: '20px' }}>
+          <div className="form-grid">
             <div className="form-group full">
               <label>Trip Title / Name *</label>
               <input
@@ -476,30 +178,19 @@ export const TripModal = ({ isOpen, onClose, tripToEdit, showToast, onOpenNewBus
               <input
                 type="number"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value, 10) || 0 })}
                 required
               />
             </div>
 
             <div className="form-group">
-              <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span>Available Seats (Auto-Detected)</span>
-                <span style={{ fontSize: '11px', color: '#0e7033', fontWeight: '700' }}>
-                  ✓ Synced with Bus
-                </span>
-              </label>
+              <label>Available Capacity (Seats / Travelers)</label>
               <input
                 type="number"
                 value={formData.seats}
-                readOnly
-                disabled
-                style={{
-                  background: 'var(--ivory-dim)',
-                  fontWeight: '700',
-                  color: 'var(--charcoal)',
-                  cursor: 'not-allowed'
-                }}
-                title="Available seats are automatically detected from the assigned fleet coach layout"
+                onChange={(e) => setFormData({ ...formData, seats: parseInt(e.target.value, 10) || 1 })}
+                min="1"
+                required
               />
             </div>
 
@@ -690,13 +381,10 @@ export const TripModal = ({ isOpen, onClose, tripToEdit, showToast, onOpenNewBus
             Cancel
           </button>
           <button type="submit" className="btn btn-primary">
-            {tripToEdit ? 'Save Trip Changes' : 'Create Trip with Auto Seats'}
+            {tripToEdit ? 'Save Trip Changes' : 'Create Curated Trip'}
           </button>
         </div>
       </form>
     </ModalWrapper>
   );
 };
-
-
-

@@ -5,7 +5,6 @@ import { CustomSelect } from '../common/CustomSelect';
 import {
   Edit2,
   Trash2,
-  Bus,
   MapPin,
   Calendar,
   Users,
@@ -14,12 +13,11 @@ import {
   Clock,
   Compass,
   Sparkles,
-  DollarSign,
   Filter
 } from 'lucide-react';
 
-export const TripList = ({ onEditTrip, onOpenNewTrip, onOpenNewBus, showToast }) => {
-  const { trips, buses, deleteTrip, updateTrip } = useAdminData();
+export const TripList = ({ onEditTrip, onOpenNewTrip, showToast }) => {
+  const { trips, deleteTrip, updateTrip } = useAdminData();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedTripDetails, setSelectedTripDetails] = useState(null);
@@ -76,9 +74,6 @@ export const TripList = ({ onEditTrip, onOpenNewTrip, onOpenNewBus, showToast })
 
   // Dedicated Trip Details Section / View — ONLY on mobile screen size (<= 900px)
   if (selectedTripDetails && isMobileScreen) {
-    const assignedBus = buses.find((b) => b.id === selectedTripDetails.busId);
-    const capacityCount = assignedBus ? (assignedBus.totalSeats || selectedTripDetails.seats || 40) : (selectedTripDetails.seats || 40);
-
     return (
       <div className="mobile-trip-detail-page">
         {/* Top Back Navigation Bar */}
@@ -154,54 +149,12 @@ export const TripList = ({ onEditTrip, onOpenNewTrip, onOpenNewBus, showToast })
           </div>
 
           <div className="trip-stat-card">
-            <span className="stat-card-label">AVAILABLE CAPACITY</span>
+            <span className="stat-card-label">AVAILABLE SEATS</span>
             <strong className="stat-card-value" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Users size={16} color="#0e7033" />
-              <span>{capacityCount} Seats Bookable</span>
+              <span>{selectedTripDetails.seats || 20} Seats Available</span>
             </strong>
-            {assignedBus && (
-              <span style={{ fontSize: '11px', color: '#0e7033', fontWeight: '600', marginTop: '2px' }}>
-                ⚡ Auto-detected from {assignedBus.busNumber}
-              </span>
-            )}
           </div>
-        </div>
-
-        {/* Assigned Bus Coach Card */}
-        <div className="mobile-detail-card">
-          <h3 className="mobile-card-title">
-            <Bus size={17} color="var(--coral)" /> Assigned Fleet Coach
-          </h3>
-          {assignedBus ? (
-            <div className="assigned-bus-summary">
-              <div className="assigned-bus-top">
-                <div>
-                  <span className="bus-no-plate">{assignedBus.busNumber}</span>
-                  <div className="bus-model-name">{assignedBus.name}</div>
-                </div>
-                <span className="bus-ac-pill is-ac">
-                  {assignedBus.acType || 'AC Coach'}
-                </span>
-              </div>
-              <div className="assigned-bus-route">
-                <MapPin size={13} color="#7a7267" />
-                <span>
-                  {assignedBus.source} → {assignedBus.destination}
-                </span>
-              </div>
-              <div className="assigned-bus-timings">
-                <Clock size={13} color="#7a7267" />
-                <span>
-                  Departure: {assignedBus.departureTime || '20:00'} · Arrival:{' '}
-                  {assignedBus.arrivalTime || '08:00 (Next Day)'}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="unassigned-bus-box">
-              <p>No bus coach is assigned to this trip run yet.</p>
-            </div>
-          )}
         </div>
 
         {/* Experience & Month Details */}
@@ -247,54 +200,15 @@ export const TripList = ({ onEditTrip, onOpenNewTrip, onOpenNewBus, showToast })
       <div className="panel-head">
         <div>
           <h2>Curated Trips Catalog ({trips.length})</h2>
-          <p>Manage destinations, pricing, bus assignments, and live availability</p>
+          <p>Manage destinations, group departures, pricing, and live availability</p>
         </div>
         <button
           className="btn btn-primary btn-sm"
-          onClick={() => {
-            if (buses.length === 0) {
-              if (onOpenNewBus) onOpenNewBus();
-              showToast('Please register a bus coach in Fleet Management first!');
-            } else {
-              onOpenNewTrip();
-            }
-          }}
+          onClick={onOpenNewTrip}
         >
           + Create New Trip
         </button>
       </div>
-
-      {/* Fleet Alert Banner if 0 buses registered */}
-      {buses.length === 0 && (
-        <div
-          style={{
-            background: '#fff7ed',
-            border: '1.5px solid #fdba74',
-            borderRadius: 'var(--radius-md)',
-            padding: '14px 18px',
-            marginBottom: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '14px',
-            flexWrap: 'wrap'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Bus size={20} color="#ea580c" />
-            <span style={{ fontSize: '13.5px', color: '#9a3412', fontWeight: '600' }}>
-              💡 Fleet Setup Required: Add a bus coach first so trips can automatically detect seating layouts & capacity.
-            </span>
-          </div>
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={onOpenNewBus}
-            style={{ padding: '6px 14px', fontSize: '12.5px' }}
-          >
-            + Register Bus in Fleet
-          </button>
-        </div>
-      )}
 
       {/* Filter and Search toolbar */}
       <div
@@ -346,105 +260,90 @@ export const TripList = ({ onEditTrip, onOpenNewTrip, onOpenNewBus, showToast })
               <th>Trip & Route</th>
               <th>Dates & Duration</th>
               <th>Price (Per Person)</th>
-              <th>Assigned Bus</th>
               <th>Available Seats</th>
               <th>Status</th>
               <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTrips.map((trip) => {
-              const assignedBus = buses.find((b) => b.id === trip.busId);
-
-              return (
-                <tr
-                  key={trip.id}
-                  onClick={() => onEditTrip(trip)}
-                  style={{ cursor: 'pointer' }}
-                  title="Click to edit trip details"
-                >
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img
-                        src={trip.img}
-                        alt={trip.name}
-                        style={{
-                          width: '48px',
-                          height: '40px',
-                          borderRadius: '6px',
-                          objectFit: 'cover'
-                        }}
-                        onError={(e) => {
-                          e.target.src =
-                            'https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=900&q=80';
-                        }}
-                      />
-                      <div>
-                        <strong style={{ color: 'var(--charcoal)' }}>{trip.name}</strong>
-                        <div style={{ fontSize: '12px', color: '#7a7267', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <MapPin size={12} />
-                          {trip.source || 'Delhi'} → {trip.destination || trip.name}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ fontSize: '13.5px' }}>{trip.dates}</div>
-                    <div style={{ fontSize: '12px', color: '#7a7267' }}>{trip.duration}</div>
-                  </td>
-                  <td>
-                    <strong style={{ color: 'var(--coral-dark)' }}>
-                      {formatCurrency(trip.price)}
-                    </strong>
-                  </td>
-                  <td>
-                    {assignedBus ? (
-                      <div style={{ fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Bus size={14} color="var(--sage-dark)" />
-                        <span>{assignedBus.busNumber}</span>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: '12px', color: '#a0988e' }}>Unassigned</span>
-                    )}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Users size={14} />
-                      <span>{trip.seats} seats</span>
-                    </div>
-                  </td>
-                  <td>
-                    <button
-                      className={`badge-pill badge-${trip.status}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStatusToggle(trip);
+            {filteredTrips.map((trip) => (
+              <tr
+                key={trip.id}
+                onClick={() => onEditTrip(trip)}
+                style={{ cursor: 'pointer' }}
+                title="Click to edit trip details"
+              >
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img
+                      src={trip.img}
+                      alt={trip.name}
+                      style={{
+                        width: '48px',
+                        height: '40px',
+                        borderRadius: '6px',
+                        objectFit: 'cover'
                       }}
-                      title="Click to toggle status"
-                    >
-                      ● {trip.status.toUpperCase()}
-                    </button>
-                  </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <div
-                      style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDelete(trip.id, trip.name)}
-                        title="Delete Trip"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      onError={(e) => {
+                        e.target.src =
+                          'https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=900&q=80';
+                      }}
+                    />
+                    <div>
+                      <strong style={{ color: 'var(--charcoal)' }}>{trip.name}</strong>
+                      <div style={{ fontSize: '12px', color: '#7a7267', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={12} />
+                        {trip.source || 'Delhi'} → {trip.destination || trip.name}
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              );
-            })}
+                  </div>
+                </td>
+                <td>
+                  <div style={{ fontSize: '13.5px' }}>{trip.dates}</div>
+                  <div style={{ fontSize: '12px', color: '#7a7267' }}>{trip.duration}</div>
+                </td>
+                <td>
+                  <strong style={{ color: 'var(--coral-dark)' }}>
+                    {formatCurrency(trip.price)}
+                  </strong>
+                </td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={14} />
+                    <span>{trip.seats || 20} seats</span>
+                  </div>
+                </td>
+                <td>
+                  <button
+                    className={`badge-pill badge-${trip.status}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStatusToggle(trip);
+                    }}
+                    title="Click to toggle status"
+                  >
+                    ● {trip.status.toUpperCase()}
+                  </button>
+                </td>
+                <td style={{ textAlign: 'right' }}>
+                  <div
+                    style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDelete(trip.id, trip.name)}
+                      title="Delete Trip"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
             {filteredTrips.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#7a7267' }}>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '36px', color: '#7a7267' }}>
                   No trips match the search criteria.
                 </td>
               </tr>
@@ -506,4 +405,3 @@ export const TripList = ({ onEditTrip, onOpenNewTrip, onOpenNewBus, showToast })
     </div>
   );
 };
-

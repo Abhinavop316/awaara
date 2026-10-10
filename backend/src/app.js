@@ -6,6 +6,8 @@ const userRoutes = require("./routes/user.routes");
 const busRoutes = require("./routes/bus.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const tripRoutes = require("./routes/trip.routes");
+const placeRoutes = require("./routes/place.routes");
+const enquiryRoutes = require("./routes/enquiry.routes");
 
 const app = express();
 
@@ -30,6 +32,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/buses", busRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/trips", tripRoutes);
+app.use("/api/places", placeRoutes);
+app.use("/api/enquiries", enquiryRoutes);
+
 
 
 // 404 Route Handler
